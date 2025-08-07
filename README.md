@@ -18,6 +18,7 @@ This can be done as follows (sources:
 ```bash
 rpm-ostree reset
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/nickfraser/bazzite-kdeland-razer:latest
+# Reboot
 ujust _install-system-flatpaks # Optional, but recommended
 ```
 
