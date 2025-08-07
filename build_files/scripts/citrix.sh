@@ -14,8 +14,12 @@ if [[ BUILD_CITRIX -eq "1" ]]; then
     wget ${url} -O ${DL_TARGET}
     DL_CHECKSUM=$(sha256sum ${DL_TARGET} | awk '{print $1}')
     if [[ "${CHECKSUM}" == "${DL_CHECKSUM}" ]]; then
-        mkdir -p /var/opt # /opt is a symlink to /var/opt, but it doesn't exist in the base image. Check for possible downstream issues.
+        rm /opt
+        mkdir -p /usr/share/factory/opt
+        ln -s /usr/share/factory/opt /opt # See: https://github.com/ublue-os/image-template/pull/100
         dnf5 install -y ${DL_TARGET}
+        rm /opt
+        ln -s /var/opt /opt
     else
         echo "Checksum does not match!"
         echo "Expected: ${CHECKSUM}, Found: ${DL_CHECKSUM}"
