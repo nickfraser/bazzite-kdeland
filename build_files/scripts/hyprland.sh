@@ -12,5 +12,6 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         terminator \
         tesseract \
         waybar \
+        wofi \
         xdg-desktop-portal-hyprland
 fi
