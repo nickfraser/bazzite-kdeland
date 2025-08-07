@@ -6,8 +6,6 @@ It's organised in a configurable way so that it should be simple to modify it to
 This repository is not meant to create some new "base" image that others should build upon.
 Please see the excellent [upstream repo](https://github.com/ublue-os/image-template) if you want to create your own custom bazzite image.
 
-This repository is meant to be a template for building your own custom [bootc](https://github.com/bootc-dev/bootc) image. This template is the recommended way to make customizations to any image published by the Universal Blue Project.
-
 ## Use This Image
 
 The recommended way to install this image is to rebase from another [Fedora Atomic](https://fedoraproject.org/atomic-desktops/) installation (e.g., bazzite KDE).
