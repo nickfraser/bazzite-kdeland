@@ -8,6 +8,7 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         grim \
         hyprland \
         network-manager-applet \
+        pavucontrol \
         swaylock \
         terminator \
         tesseract \
