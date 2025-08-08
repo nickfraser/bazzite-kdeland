@@ -14,10 +14,12 @@ This can be done as follows (sources:
 [2](https://docs.bazzite.gg/Installing_and_Managing_Software/Updates_Rollbacks_and_Rebasing/rebase_guide/)):
 
 ```bash
-rpm-ostree reset
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/nickfraser/bazzite-kdeland-razer:latest
+sudo rpm-ostree reset
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/nickfraser/bazzite-kdeland-razer:latest
 # Reboot
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/nickfraser/bazzite-kdeland-razer:latest # Only works if you get the cosign to work?
 ujust _install-system-flatpaks # Optional, but recommended
+# Reboot
 ```
 
 ## Environment Variables
