@@ -33,7 +33,8 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed when in SDDM, default=1
  - `BUILD_LAPTOP_OPENRAZER=<0|1>` install open-razer utilities, default=0
- - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
+ - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=1
+ - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an affect if `BUILD_CITRIX=1`, default=1
 
 ## Build Locally
 

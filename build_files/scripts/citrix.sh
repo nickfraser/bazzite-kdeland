@@ -14,12 +14,17 @@ if [[ BUILD_CITRIX -eq "1" ]]; then
     wget ${url} -O ${DL_TARGET}
     DL_CHECKSUM=$(sha256sum ${DL_TARGET} | awk '{print $1}')
     if [[ "${CHECKSUM}" == "${DL_CHECKSUM}" ]]; then
-        rm /opt
-        mkdir -p /usr/share/factory/opt
-        ln -s /usr/share/factory/opt /opt # See: https://github.com/ublue-os/image-template/pull/100
-        dnf5 install -y ${DL_TARGET}
-        rm /opt
-        ln -s /var/opt /opt
+        if [[ BUILD_CITRIX_DEPS_ONLY -eq "1" ]]; then
+            # Extract dependencies from rpm and install them (TODO: keep version constraints?)
+            rpm -qRp ${DL_TARGET} | awk '{print $1}' | grep -Ev '(/bin/sh|rpmlib)' | sort -u | xargs dnf5 -y install
+        else
+            rm /opt
+            mkdir -p /usr/share/factory/opt
+            ln -s /usr/share/factory/opt /opt # See: https://github.com/ublue-os/image-template/pull/100
+            dnf5 install -y ${DL_TARGET}
+            rm /opt
+            ln -s /var/opt /opt
+        fi
     else
         echo "Checksum does not match!"
         echo "Expected: ${CHECKSUM}, Found: ${DL_CHECKSUM}"
