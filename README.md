@@ -4,7 +4,8 @@ This repository contains a set of scripts to install all the prerequisites for a
 It's organised in a configurable way so that it should be simple to modify it to create your own image.
 
 This repository is not meant to create some new "base" image that others should build upon.
-Please see the excellent [upstream repo](https://github.com/ublue-os/image-template) if you want to create your own custom bazzite image.
+Instead, if you want to customize this build, I suggest you fork this repo and make the necessary changes.
+If making Please see the excellent [upstream repo](https://github.com/ublue-os/image-template) if you want to create your own custom bazzite image.
 
 ## Use This Image
 
@@ -53,6 +54,13 @@ I still need to install:
 
  - [ ] OpenRazer
  - [ ] Citrix
+
+## TODO:
+
+Some outstanding items:
+ - [ ] Fix automatic installation of OpenRazer
+ - [ ] Add option to install Citrix dependencies only
+ - [ ] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
 
 ## Acknowledgements
 
