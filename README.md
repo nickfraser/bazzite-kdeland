@@ -23,6 +23,12 @@ ujust _install-system-flatpaks # Optional, but recommended
 # Reboot
 ```
 
+After installation, update with:
+
+```bash
+ujust update
+```
+
 ## Environment Variables
 
 In order to control what packages are installed you can modify the following variables:
