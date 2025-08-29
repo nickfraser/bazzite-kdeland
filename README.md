@@ -41,6 +41,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_LAPTOP_OPENRAZER=<0|1>` install open-razer utilities, default=0
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=1
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=1
+ - `BUILD_VIRTUALBOX=<0|1>` install virtualbox with the extensions, default=1
 
 ## Build Locally
 
@@ -76,6 +77,7 @@ Some outstanding items:
  - [bootc](https://github.com/bootc-dev/bootc) - the underlying technology
  - [bazzite](https://bazzite.gg/) - the base image
  - bazzite's [image-template](https://github.com/ublue-os/image-template) - the excellent upstream that allowed me to put together a PoC in an afternoon
+ - Virtualbox installation taken from [this repository](https://github.com/Preston159/bazzite-virtualbox)
 
 ## Community Examples
 
