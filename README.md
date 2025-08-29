@@ -5,7 +5,7 @@ It's organised in a configurable way so that it should be simple to modify it to
 
 This repository is not meant to create some new "base" image that others should build upon.
 Instead, if you want to customize this build, I suggest you fork this repo and make the necessary changes.
-If making Please see the excellent [upstream repo](https://github.com/ublue-os/image-template) if you want to create your own custom bazzite image.
+Otherwise, please see the excellent [upstream repo](https://github.com/ublue-os/image-template) if you want to create your own custom bazzite image.
 
 ## Use This Image
 
