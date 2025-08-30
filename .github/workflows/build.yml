@@ -28,7 +28,6 @@ env:
   BUILD_LAPTOP_OPENRAZER: 0
   BUILD_CITRIX: 1
   BUILD_CITRIX_DEPS_ONLY: 1
-  BUILD_VIRTUALBOX: 1
   DEFAULT_TAG: "latest"
 
 concurrency:
@@ -124,7 +123,6 @@ jobs:
             BUILD_LAPTOP_OPENRAZER=${{ env.BUILD_LAPTOP_OPENRAZER }}
             BUILD_CITRIX=${{ env.BUILD_CITRIX }}
             BUILD_CITRIX_DEPS_ONLY=${{ env.BUILD_CITRIX_DEPS_ONLY }}
-            BUILD_VIRTUALBOX=${{ env.BUILD_VIRTUALBOX }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

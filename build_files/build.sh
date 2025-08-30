@@ -9,4 +9,3 @@ ${BASEDIR}/scripts/shell.sh # BUILD_SHELL=1 to install shell tools
 ${BASEDIR}/scripts/hyprland.sh # BUILD_HYPRLAND=1 to install hyprland
 ${BASEDIR}/scripts/laptop.sh # BUILD_LAPTOP=1 to install laptop settings
 ${BASEDIR}/scripts/citrix.sh # BUILD_CITRIX=1 to install citrix workspace
-${BASEDIR}/scripts/virtualbox.sh # BUILD_VIRTUALBOX=1 to install virtualbox
