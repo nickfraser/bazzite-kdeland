@@ -4,8 +4,8 @@ set -ouex pipefail
 
 if [[ BUILD_CITRIX -eq "1" ]]; then
     # I'm checking for a checksum match, because I don't trust this script - too many assumption built-in
-    CHECKSUM="7aca51455f546de3da31ce8961fee8b3edc5b6e2e8804e1c445ff836f35df549"
-    VERSION="25.05.0.44-0"
+    CHECKSUM="1ebd3eae4e0ad97bc1a00d011d896e6b1d8e98206bc8815d8382b272576f348a"
+    VERSION="25.08.0.88-0"
     DL_TARGET=/tmp/citrix_workspace_x86_64.rpm
     # Scrape website to get the right download link
     url=$(wget -O - https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html | sed -ne '/ICAClient-rhel.*/ s/<a .* rel="\(.*\)" id="downloadcomponent.*">/https:\1/p' | sed -e 's/\r//g')
