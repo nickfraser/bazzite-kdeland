@@ -32,5 +32,5 @@ if [[ BUILD_DOCKER -eq "1" ]]; then
         docker-compose-plugin
 
     # Enable docker
-    systemctl enable docker
+    systemctl enable docker.socket
 fi
