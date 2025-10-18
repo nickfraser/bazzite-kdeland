@@ -18,4 +18,4 @@ mkdir -p /var
 # Commit and lint container
 bootc container lint || true
 
-log "Cleanup completed"
+echo "Cleanup completed"
