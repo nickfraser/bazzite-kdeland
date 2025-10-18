@@ -124,6 +124,7 @@ jobs:
             BUILD_LAPTOP_OPENRAZER=${{ env.BUILD_LAPTOP_OPENRAZER }}
             BUILD_CITRIX=${{ env.BUILD_CITRIX }}
             BUILD_CITRIX_DEPS_ONLY=${{ env.BUILD_CITRIX_DEPS_ONLY }}
+            BUILD_DOCKER=${{ env.BUILD_DOCKER }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
