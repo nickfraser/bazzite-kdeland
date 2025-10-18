@@ -6,7 +6,7 @@ TIMESTAMP=`date +%Y%m%d%H%M`
 IMAGE_TAG_PREFIX=$USER/bazzite-kdeland-local
 
 # BUILD ARGUMENTS:
-BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite-dx-nvidia:stable
+BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite-nvidia-open:stable
 BUILD_SHELL=1
 BUILD_HYPRLAND=1
 BUILD_LAPTOP=1
@@ -14,6 +14,7 @@ BUILD_LAPTOP_CLAMSHELL=1
 BUILD_LAPTOP_OPENRAZER=0
 BUILD_CITRIX=1
 BUILD_CITRIX_DEPS_ONLY=1
+BUILD_DOCKER=1
 
 docker build \
     -f Containerfile \
@@ -28,4 +29,5 @@ docker build \
     --build-arg BUILD_LAPTOP_OPENRAZER="${BUILD_LAPTOP_OPENRAZER}" \
     --build-arg BUILD_CITRIX="${BUILD_CITRIX}" \
     --build-arg BUILD_CITRIX_DEPS_ONLY="${BUILD_CITRIX_DEPS_ONLY}" \
+    --build-arg BUILD_DOCKER="${BUILD_DOCKER}" \
     .

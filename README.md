@@ -33,7 +33,7 @@ ujust update
 
 In order to control what packages are installed you can modify the following variables:
 
- - `BUILD_FROM_IMAGE=<base_image>` the base image, default: `ghcr.io/ublue-os/bazzite-dx-nvidia:stable`
+ - `BUILD_FROM_IMAGE=<base_image>` the base image, default: `ghcr.io/ublue-os/bazzite-nvidia-open:stable`
  - `BUILD_SHELL=<0|1>` add various commandline utilities, default=1
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
@@ -41,6 +41,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_LAPTOP_OPENRAZER=<0|1>` install open-razer utilities, default=0
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=1
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=1
+ - `BUILD_DOCKER=<0|1>` install Docker, default=1
 
 ## Build Locally
 

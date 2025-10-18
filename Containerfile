@@ -15,6 +15,7 @@ ARG BUILD_LAPTOP_CLAMSHELL
 ARG BUILD_LAPTOP_OPENRAZER
 ARG BUILD_CITRIX
 ARG BUILD_CITRIX_DEPS_ONLY
+ARG BUILD_DOCKER
 
 # Layer on my own customizations
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
@@ -22,6 +23,11 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh && \
+    ostree container commit
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    mkdir -p /var/roothome && \
+    /ctx/build-system.sh && \
     ostree container commit
     
 ### LINTING
