@@ -33,4 +33,12 @@ if [[ BUILD_DOCKER -eq "1" ]]; then
 
     # Enable docker
     systemctl enable docker.socket
+
+    # Load iptable_nat module for docker-in-docker.
+    # See:
+    #   - https://github.com/ublue-os/bluefin/issues/2365
+    #   - https://github.com/devcontainers/features/issues/1235
+    mkdir -p /etc/modules-load.d && cat >>/etc/modules-load.d/ip_tables.conf <<EOF
+iptable_nat
+EOF
 fi
