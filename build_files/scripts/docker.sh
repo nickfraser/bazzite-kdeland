@@ -19,7 +19,7 @@ if [[ BUILD_DOCKER -eq "1" ]]; then
 
     # Install docker repo
     dnf5 -y install dnf-plugins-core
-    dnf5 config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+    dnf5 config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
     dnf5 config-manager setopt docker-ce-stable.enabled=0
 
     # Install docker
