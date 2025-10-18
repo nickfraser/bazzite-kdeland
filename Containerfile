@@ -23,6 +23,11 @@ RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh && \
     ostree container commit
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    mkdir -p /var/roothome && \
+    /ctx/build-system.sh && \
+    ostree container commit
     
 ### LINTING
 ## Verify final image and contents are correct.
