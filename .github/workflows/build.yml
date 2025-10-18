@@ -20,7 +20,7 @@ env:
   IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4"  # Put your own image here for a fancy profile on https://artifacthub.io/!
   IMAGE_NAME: "bazzite-kdeland-razer"  # output image name, usually same as repo name
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
-  BUILD_FROM_IMAGE: "ghcr.io/ublue-os/bazzite-dx-nvidia:stable"
+  BUILD_FROM_IMAGE: "ghcr.io/ublue-os/bazzite-nvidia-open:stable"
   BUILD_SHELL: 1
   BUILD_HYPRLAND: 1
   BUILD_LAPTOP: 1
