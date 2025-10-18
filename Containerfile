@@ -15,6 +15,7 @@ ARG BUILD_LAPTOP_CLAMSHELL
 ARG BUILD_LAPTOP_OPENRAZER
 ARG BUILD_CITRIX
 ARG BUILD_CITRIX_DEPS_ONLY
+ARG BUILD_DOCKER
 
 # Layer on my own customizations
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \

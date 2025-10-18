@@ -29,4 +29,5 @@ docker build \
     --build-arg BUILD_LAPTOP_OPENRAZER="${BUILD_LAPTOP_OPENRAZER}" \
     --build-arg BUILD_CITRIX="${BUILD_CITRIX}" \
     --build-arg BUILD_CITRIX_DEPS_ONLY="${BUILD_CITRIX_DEPS_ONLY}" \
+    --build-arg BUILD_DOCKER="${BUILD_DOCKER}" \
     .
