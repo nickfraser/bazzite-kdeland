@@ -42,6 +42,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=1
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=1
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
+ - `BUILD_WINE=<0|1>` install Wine, default=1
 
 ## Build Locally
 

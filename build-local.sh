@@ -15,6 +15,7 @@ BUILD_LAPTOP_OPENRAZER=0
 BUILD_CITRIX=1
 BUILD_CITRIX_DEPS_ONLY=1
 BUILD_DOCKER=1
+BUILD_WINE=1
 
 docker build \
     -f Containerfile \
@@ -30,4 +31,5 @@ docker build \
     --build-arg BUILD_CITRIX="${BUILD_CITRIX}" \
     --build-arg BUILD_CITRIX_DEPS_ONLY="${BUILD_CITRIX_DEPS_ONLY}" \
     --build-arg BUILD_DOCKER="${BUILD_DOCKER}" \
+    --build-arg BUILD_WINE="${BUILD_WINE}" \
     .
