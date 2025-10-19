@@ -29,6 +29,7 @@ env:
   BUILD_CITRIX: 1
   BUILD_CITRIX_DEPS_ONLY: 1
   BUILD_DOCKER: 1
+  BUILD_WINE: 1
   DEFAULT_TAG: "latest"
 
 concurrency:
@@ -125,6 +126,7 @@ jobs:
             BUILD_CITRIX=${{ env.BUILD_CITRIX }}
             BUILD_CITRIX_DEPS_ONLY=${{ env.BUILD_CITRIX_DEPS_ONLY }}
             BUILD_DOCKER=${{ env.BUILD_DOCKER }}
+            BUILD_WINE=${{ env.BUILD_WINE }}
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
