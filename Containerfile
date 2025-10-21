@@ -17,6 +17,7 @@ ARG BUILD_CITRIX
 ARG BUILD_CITRIX_DEPS_ONLY
 ARG BUILD_DOCKER
 ARG BUILD_WINE
+ARG BUILD_KVM
 
 # Layer on my own customizations
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
