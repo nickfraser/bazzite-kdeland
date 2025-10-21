@@ -74,14 +74,16 @@ Some outstanding items:
  - [ ] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
  - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)
  - [ ] "Idle" state missing from `hyprland` install (install `hypridle` and/or `hyprlock`? COPR Repos?)
- - [ ] `docker` installation (#10, didn't quite work!)
- - [ ] Consider install all `libvirt` tools via the commandline, instead of some with `ujust` post-installation
+ - [x] `docker` installation (#10, didn't quite work!)
+ - [x] Consider install all `libvirt` tools via the commandline, instead of some with `ujust` post-installation
+ - [x] Install wine natively
 
 ## Acknowledgements
 
  - [bootc](https://github.com/bootc-dev/bootc) - the underlying technology
  - [bazzite](https://bazzite.gg/) - the base image
  - bazzite's [image-template](https://github.com/ublue-os/image-template) - the excellent upstream that allowed me to put together a PoC in an afternoon
+ - [bazzite-dx](https://github.com/ublue-os/bazzite-dx) - the developer image that shows how to get docker/virtualization installed.
 
 ## Community Examples
 
