@@ -9,21 +9,13 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         brightnessctl \
         grimshot \
         hyprland \
-        hyprpaper \
         hyprpicker \
         hypridle \
         hyprlock \
-        hyprsunset \
-        hyprpolkitagent \
-        hyprsysteminfo \
-        hyprpanel \
-        hyprland-guiutils \
-        hyprland-qt-support	\
-        qt6ct-kde			\
-        terminator \
-        tesseract \
         network-manager-applet \
         pavucontrol \
+        terminator \
+        tesseract \
         waybar \
         wofi \
         xdg-desktop-portal-hyprland
