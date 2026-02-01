@@ -3,7 +3,7 @@
 set -ouex pipefail
 
 if [[ BUILD_HYPRLAND -eq "1" ]]; then
-    dnf5 -y copr enable ashbuk/hyprland
+    dnf5 -y copr enable ashbuk/Hyprland-Fedora
     dnf5 -y install \
         blueman \
         brightnessctl \
@@ -20,5 +20,5 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         waybar \
         wofi \
         xdg-desktop-portal-hyprland
-    dnf5 -y copr disable ashbuk/hyprland
+    dnf5 -y copr disable ashbuk/Hyprland-Fedora
 fi
