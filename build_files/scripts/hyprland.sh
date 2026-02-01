@@ -9,12 +9,9 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         brightnessctl \
         grimshot \
         hyprland \
-        hyprland-qtutils \
-        hyprpicker \
-        hypridle \
-        hyprlock \
         network-manager-applet \
         pavucontrol \
+        swaylock \
         terminator \
         tesseract \
         waybar \
