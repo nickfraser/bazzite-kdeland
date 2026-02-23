@@ -7,16 +7,16 @@ VM_NAME="bazzite-local-vm"
 VCPUS=4
 RAM_MB=4096
 DISK_FORMAT="qcow2"
-# Note: Podman and bootc-image-builder need to be run as root to access the local storage cache
+# Note: Podman and bootc-image-builder usually need to be run as root to access the local storage cache
 # easily and correctly build the image.
 IMAGE_TAG="localhost/${VM_NAME}:latest"
 BIB_IMAGE="quay.io/centos-bootc/bootc-image-builder:latest"
 OUTPUT_DIR="${PWD}/output"
-LIBVIRT_POOL="/var/lib/libvirt/images"
 
 # --- Arguments & Flags ---
 CONFIG_FILE=""
 CREATE_DEFAULT_CONFIG=0
+USE_ROOTLESS=0
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -27,6 +27,7 @@ usage() {
     echo "Options:"
     echo "  --config <file.toml>    Use a custom config.toml for bootc-image-builder."
     echo "  --default-config        Create and use a default config.toml (user 'core', password 'password')."
+    echo "  --rootless              Run completely without sudo (Warning: may fail during image build)."
     echo "  -h, --help              Show this help message."
     echo ""
     echo "Example:"
@@ -49,6 +50,10 @@ while [[ $# -gt 0 ]]; do
             CREATE_DEFAULT_CONFIG=1
             shift
             ;;
+        --rootless)
+            USE_ROOTLESS=1
+            shift
+            ;;
         -h|--help)
             usage
             ;;
@@ -58,6 +63,24 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [[ $USE_ROOTLESS -eq 1 ]]; then
+    SUDO_CMD=""
+    LIBVIRT_URI="qemu:///session"
+    LIBVIRT_POOL="${HOME}/.local/share/libvirt/images"
+    CONTAINERS_STORAGE="${HOME}/.local/share/containers/storage"
+    echo "=> Running in ROOTLESS mode. (Note: bootc-image-builder may fail without real root capabilities)"
+else
+    SUDO_CMD="sudo"
+    LIBVIRT_URI="qemu:///system"
+    LIBVIRT_POOL="/var/lib/libvirt/images"
+    CONTAINERS_STORAGE="/var/lib/containers/storage"
+fi
+
+# Create libvirt pool directory if it doesn't exist (important for rootless)
+if [[ $USE_ROOTLESS -eq 1 ]]; then
+    mkdir -p "${LIBVIRT_POOL}"
+fi
 
 # --- Pre-flight Checks ---
 echo "=> Checking dependencies..."
@@ -76,6 +99,13 @@ fi
 
 # --- Declarative Configuration ---
 TMP_CONFIG=""
+cleanup() {
+    if [[ -n "$TMP_CONFIG" && -f "$TMP_CONFIG" ]]; then
+        rm -f "$TMP_CONFIG"
+    fi
+}
+trap cleanup EXIT
+
 if [[ -n "$CONFIG_FILE" ]]; then
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "Error: Config file '$CONFIG_FILE' not found."
@@ -96,12 +126,12 @@ else
     echo "=> No config.toml provided. The VM will boot, but you may need a graphical first-boot wizard (if present in the image) to set a password."
 fi
 
-# --- 1. Build the OCI Image (Rootful) ---
-echo "=> Building OCI image using Podman (requires sudo)..."
+# --- 1. Build the OCI Image ---
+echo "=> Building OCI image using Podman..."
 # Using same build args as build-local.sh where possible
 BUILD_FROM_IMAGE="ghcr.io/ublue-os/bazzite-nvidia-open:stable"
 
-sudo podman build \
+$SUDO_CMD podman build \
     -f Containerfile \
     --tag="${IMAGE_TAG}" \
     --build-arg BUILD_FROM_IMAGE="${BUILD_FROM_IMAGE}" \
@@ -118,7 +148,7 @@ sudo podman build \
     .
 
 # --- 2. Generate the QCOW2 Disk ---
-echo "=> Converting OCI image to QCOW2 using bootc-image-builder (requires sudo)..."
+echo "=> Converting OCI image to QCOW2 using bootc-image-builder..."
 mkdir -p "${OUTPUT_DIR}"
 
 BIB_ARGS=(
@@ -129,7 +159,7 @@ BIB_ARGS=(
 
 # Setup volume mounts for the container
 VOLUMES=(
-    "-v" "/var/lib/containers/storage:/var/lib/containers/storage"
+    "-v" "${CONTAINERS_STORAGE}:/var/lib/containers/storage"
     "-v" "${OUTPUT_DIR}:/output"
 )
 
@@ -140,7 +170,7 @@ if [[ -n "$CONFIG_FILE" ]]; then
     BIB_ARGS+=("--config" "/config.toml")
 fi
 
-sudo podman run \
+$SUDO_CMD podman run \
     --rm \
     -it \
     --privileged \
@@ -153,11 +183,8 @@ sudo podman run \
     "${IMAGE_TAG}"
 
 # Ensure output is accessible by the current user
-sudo chown -R "$USER:$USER" "${OUTPUT_DIR}"
-
-# Clean up temp config if we made one
-if [[ -n "$TMP_CONFIG" && -f "$TMP_CONFIG" ]]; then
-    rm -f "$TMP_CONFIG"
+if [[ $USE_ROOTLESS -eq 0 ]]; then
+    sudo chown -R "$USER:$USER" "${OUTPUT_DIR}"
 fi
 
 QCOW2_FILE="${OUTPUT_DIR}/${DISK_FORMAT}/disk.${DISK_FORMAT}"
@@ -170,27 +197,31 @@ fi
 echo "=> Provisioning KVM Virtual Machine..."
 
 # Check if VM already exists and destroy/undefine it
-if sudo virsh dominfo "${VM_NAME}" &>/dev/null; then
+if virsh --connect "${LIBVIRT_URI}" dominfo "${VM_NAME}" &>/dev/null; then
     echo "   VM '${VM_NAME}' already exists. Destroying and undefining it..."
-    sudo virsh destroy "${VM_NAME}" &>/dev/null || true
-    sudo virsh undefine "${VM_NAME}" --nvram --remove-all-storage &>/dev/null || true
+    virsh --connect "${LIBVIRT_URI}" destroy "${VM_NAME}" &>/dev/null || true
+    virsh --connect "${LIBVIRT_URI}" undefine "${VM_NAME}" --nvram --remove-all-storage &>/dev/null || true
 fi
 
 # Copy the disk image to libvirt's default pool
 DEST_IMG="${LIBVIRT_POOL}/${VM_NAME}.${DISK_FORMAT}"
-echo "   Copying disk image to ${DEST_IMG} (requires sudo)..."
-sudo cp "${QCOW2_FILE}" "${DEST_IMG}"
+echo "   Copying disk image to ${DEST_IMG}..."
+$SUDO_CMD cp "${QCOW2_FILE}" "${DEST_IMG}"
 
 # Set correct ownership and SELinux context for libvirt
-sudo chown qemu:qemu "${DEST_IMG}" &>/dev/null || true # Best effort, might be libvirt-qemu on some distros
-sudo chmod 644 "${DEST_IMG}"
-if command -v restorecon &> /dev/null; then
-    sudo restorecon -Rv "${DEST_IMG}" &>/dev/null || true
+if [[ $USE_ROOTLESS -eq 0 ]]; then
+    $SUDO_CMD chown qemu:qemu "${DEST_IMG}" &>/dev/null || true # Best effort, might be libvirt-qemu on some distros
+    $SUDO_CMD chmod 644 "${DEST_IMG}"
+    if command -v restorecon &> /dev/null; then
+        $SUDO_CMD restorecon -Rv "${DEST_IMG}" &>/dev/null || true
+    fi
+else
+    chmod 644 "${DEST_IMG}"
 fi
 
 echo "=> Launching VM using virt-install..."
-# We use sudo for virt-install so it connects to the system qemu:///system URI properly
-sudo virt-install \
+# Use correct URI based on whether we are using sudo/system or user/session
+virt-install --connect "${LIBVIRT_URI}" \
     --name "${VM_NAME}" \
     --memory "${RAM_MB}" \
     --vcpus "${VCPUS}" \
@@ -208,5 +239,5 @@ echo ""
 echo "========================================================================"
 echo "Success! VM '${VM_NAME}' has been created and started."
 echo "You can view the display using Virt-Manager or by running:"
-echo "  sudo virt-viewer -c qemu:///system ${VM_NAME}"
+echo "  virt-viewer -c ${LIBVIRT_URI} ${VM_NAME}"
 echo "========================================================================"
