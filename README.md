@@ -77,6 +77,7 @@ Some outstanding items:
  - [x] `docker` installation (#10, didn't quite work!)
  - [x] Consider install all `libvirt` tools via the commandline, instead of some with `ujust` post-installation
  - [x] Install wine natively
+ - [ ] Install `gparted` on image
 
 ## Acknowledgements
 
