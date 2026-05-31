@@ -38,8 +38,82 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  publish_guard:
+    name: Check publish guard
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: read
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+
+    steps:
+      - name: Check recent published image
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          OWNER_NAME: ${{ github.repository_owner }}
+          OWNER_TYPE: ${{ github.event.repository.owner.type }}
+        run: |
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
+            echo "Not a scheduled run; allowing publish."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$OWNER_TYPE" == "Organization" ]]; then
+            api_path="/orgs/$OWNER_NAME/packages/container/$IMAGE_NAME/versions?per_page=100"
+          else
+            api_path="/users/$OWNER_NAME/packages/container/$IMAGE_NAME/versions?per_page=100"
+          fi
+
+          response_file=$(mktemp)
+          http_status=$(curl -sS -o "$response_file" -w "%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com$api_path")
+
+          if [[ "$http_status" == "404" ]]; then
+            echo "No published image found yet; allowing scheduled publish."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$http_status" != "200" ]]; then
+            echo "Failed to query package versions: HTTP $http_status"
+            cat "$response_file"
+            exit 1
+          fi
+
+          latest_created_at=$(jq -r '[.[].created_at] | sort | last // empty' "$response_file")
+
+          if [[ -z "$latest_created_at" ]]; then
+            echo "No package versions returned; allowing scheduled publish."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          latest_epoch=$(date -u -d "$latest_created_at" +%s)
+          now_epoch=$(date -u +%s)
+          min_age_seconds=$((7 * 24 * 60 * 60))
+          age_seconds=$((now_epoch - latest_epoch))
+
+          echo "Latest published image timestamp: $latest_created_at"
+
+          if (( age_seconds >= min_age_seconds )); then
+            echo "Last published image is at least 7 days old; allowing scheduled publish."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Last published image is newer than 7 days; skipping scheduled publish."
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+
   build_push:
     name: Build and push image
+    needs: publish_guard
+    if: github.event_name != 'schedule' || needs.publish_guard.outputs.should_publish == 'true'
     runs-on: ubuntu-24.04
 
     permissions:
