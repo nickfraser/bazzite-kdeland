@@ -1,5 +1,5 @@
 # BUILD_FROM_IMAGE definition MUST be the first (uncommented) line: https://stackoverflow.com/a/78364729
-ARG BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite:stable
+ARG BUILD_FROM_IMAGE=ghcr.io/nickfraser/bazzite-nvidia-open:stable-42
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 COPY build_files /
