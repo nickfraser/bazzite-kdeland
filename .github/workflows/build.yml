@@ -21,6 +21,7 @@ env:
   IMAGE_NAME: "bazzite-kdeland-razer"  # output image name, usually same as repo name
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
   BUILD_FROM_IMAGE: "ghcr.io/nickfraser/bazzite-nvidia-open:stable-42"
+  BUILD_UPDATE: 1
   BUILD_SHELL: 1
   BUILD_HYPRLAND: 1
   BUILD_LAPTOP: 1
@@ -119,6 +120,7 @@ jobs:
         run: |
           build_args=(
             --build-arg "BUILD_FROM_IMAGE=${BUILD_FROM_IMAGE}"
+            --build-arg "BUILD_UPDATE=${BUILD_UPDATE}"
             --build-arg "BUILD_SHELL=${BUILD_SHELL}"
             --build-arg "BUILD_HYPRLAND=${BUILD_HYPRLAND}"
             --build-arg "BUILD_LAPTOP=${BUILD_LAPTOP}"
