@@ -7,6 +7,7 @@ IMAGE_TAG_PREFIX=$USER/bazzite-kdeland-local
 
 # BUILD ARGUMENTS:
 BUILD_FROM_IMAGE=ghcr.io/nickfraser/bazzite-nvidia-open:stable-42
+BUILD_UPDATE=1
 BUILD_SHELL=1
 BUILD_HYPRLAND=1
 BUILD_LAPTOP=1
@@ -24,6 +25,7 @@ docker build \
     --tag=${IMAGE_TAG_PREFIX}:stable \
     --tag=${IMAGE_TAG_PREFIX}:latest \
     --build-arg BUILD_FROM_IMAGE="${BUILD_FROM_IMAGE}" \
+    --build-arg BUILD_UPDATE="${BUILD_UPDATE}" \
     --build-arg BUILD_SHELL="${BUILD_SHELL}" \
     --build-arg BUILD_HYPRLAND="${BUILD_HYPRLAND}" \
     --build-arg BUILD_LAPTOP="${BUILD_LAPTOP}" \
