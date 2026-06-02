@@ -76,6 +76,11 @@ jobs:
           # https://linux.die.net/man/1/date
           echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
 
+      - name: Get image version
+        id: version
+        run: |
+          echo "version=${DEFAULT_TAG}.$(date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+
       # Image metadata for https://artifacthub.io/ - This is optional but is highly recommended so we all can get a index of all the custom images
       # The metadata by itself is not going to do anything, you choose if you want your image to be on ArtifactHub or not.
       - name: Image Metadata
@@ -99,7 +104,7 @@ jobs:
             org.opencontainers.image.title=${{ env.IMAGE_NAME }}
             org.opencontainers.image.url=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
             org.opencontainers.image.vendor=${{ github.repository_owner }}
-            org.opencontainers.image.version=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
             io.artifacthub.package.deprecated=false
             io.artifacthub.package.keywords=${{ env.IMAGE_KEYWORDS }}
             io.artifacthub.package.license=Apache-2.0
@@ -111,52 +116,73 @@ jobs:
 
       - name: Build Image
         id: build_image
-        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
-        with:
-          containerfiles: |
-            ./Containerfile
-          # Postfix image name with -custom to make it a little more descriptive
-          # Syntax: https://docs.github.com/en/actions/learn-github-actions/expressions#format
-          build-args: |
-            BUILD_FROM_IMAGE=${{ env.BUILD_FROM_IMAGE }}
-            BUILD_SHELL=${{ env.BUILD_SHELL }}
-            BUILD_HYPRLAND=${{ env.BUILD_HYPRLAND }}
-            BUILD_LAPTOP=${{ env.BUILD_LAPTOP }}
-            BUILD_LAPTOP_CLAMSHELL=${{ env.BUILD_LAPTOP_CLAMSHELL }}
-            BUILD_LAPTOP_OPENRAZER=${{ env.BUILD_LAPTOP_OPENRAZER }}
-            BUILD_CITRIX=${{ env.BUILD_CITRIX }}
-            BUILD_CITRIX_DEPS_ONLY=${{ env.BUILD_CITRIX_DEPS_ONLY }}
-            BUILD_DOCKER=${{ env.BUILD_DOCKER }}
-            BUILD_WINE=${{ env.BUILD_WINE }}
-            BUILD_KVM=${{ env.BUILD_KVM }}
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-          oci: false
+        run: |
+          build_args=(
+            --build-arg "BUILD_FROM_IMAGE=${BUILD_FROM_IMAGE}"
+            --build-arg "BUILD_SHELL=${BUILD_SHELL}"
+            --build-arg "BUILD_HYPRLAND=${BUILD_HYPRLAND}"
+            --build-arg "BUILD_LAPTOP=${BUILD_LAPTOP}"
+            --build-arg "BUILD_LAPTOP_CLAMSHELL=${BUILD_LAPTOP_CLAMSHELL}"
+            --build-arg "BUILD_LAPTOP_OPENRAZER=${BUILD_LAPTOP_OPENRAZER}"
+            --build-arg "BUILD_CITRIX=${BUILD_CITRIX}"
+            --build-arg "BUILD_CITRIX_DEPS_ONLY=${BUILD_CITRIX_DEPS_ONLY}"
+            --build-arg "BUILD_DOCKER=${BUILD_DOCKER}"
+            --build-arg "BUILD_WINE=${BUILD_WINE}"
+            --build-arg "BUILD_KVM=${BUILD_KVM}"
+          )
+
+          label_args=()
+          while IFS= read -r label; do
+            [ -z "$label" ] && continue
+            label_args+=(--label "$label")
+          done <<'EOF'
+          ${{ steps.metadata.outputs.labels }}
+          EOF
+
+          sudo podman build \
+            -f ./Containerfile \
+            "${build_args[@]}" \
+            "${label_args[@]}" \
+            --format docker \
+            --tag "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" \
+            .
+
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            [ "$tag" = "$DEFAULT_TAG" ] && continue
+            sudo podman tag "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" "localhost/${IMAGE_NAME}:$tag"
+          done
 
       # Rechunk is a script that we use on Universal Blue to make sure there isnt a single huge layer when your image gets published.
       # This does not make your image faster to download, just provides better resumability and fixes a few errors.
       # Documentation for Rechunk is provided on their github repository at https://github.com/hhd-dev/rechunk
-      # You can enable it by uncommenting the following lines:
-      # - name: Run Rechunker
-      #   id: rechunk
-      #   uses: hhd-dev/rechunk@f153348d8100c1f504dec435460a0d7baf11a9d2 # v1.1.1
-      #   with:
-      #     rechunk: 'ghcr.io/hhd-dev/rechunk:v1.0.1'
-      #     ref: "localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
-      #     prev-ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
-      #     skip_compression: true
-      #     version: ${{ env.CENTOS_VERSION }}
-      #     labels: ${{ steps.metadata.outputs.labels }} # Rechunk strips out all the labels during build, this needs to be reapplied here with newline separator
+      - name: Run Rechunker
+        id: rechunk
+        uses: hhd-dev/rechunk@5fbe1d3a639615d2548d83bc888360de6267b1a2 # v1.2.4
+        with:
+          rechunk: 'ghcr.io/hhd-dev/rechunk:v1.2.4'
+          ref: "localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+          prev-ref: "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+          skip_compression: true
+          version: ${{ steps.version.outputs.version }}
+          labels: ${{ steps.metadata.outputs.labels }} # Rechunk strips out all the labels during build, this needs to be reapplied here with newline separator
 
-      # This is necessary so that the podman socket can find the rechunked image on its storage
-      # - name: Load in podman and tag
-      #   run: |
-      #     IMAGE=$(podman pull ${{ steps.rechunk.outputs.ref }})
-      #     sudo rm -rf ${{ steps.rechunk.outputs.output }}
-      #     for tag in ${{ steps.metadata.outputs.tags }}; do
-      #       podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
-      #     done
+      # This is necessary so that the podman socket can find the rechunked image on its storage.
+      - name: Load in podman and tag
+        run: |
+          IMAGE=$(podman pull --quiet ${{ steps.rechunk.outputs.ref }})
+          sudo rm -rf ${{ steps.rechunk.outputs.location }}
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            podman tag $IMAGE ${{ env.IMAGE_NAME }}:$tag
+          done
+
+      - name: Verify rechunked image labels
+        run: |
+          VERSION=$(podman inspect ${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }} --format '{{ index .Config.Labels "org.opencontainers.image.version" }}')
+          BOOTC=$(podman inspect ${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }} --format '{{ index .Config.Labels "containers.bootc" }}')
+
+          test -n "$VERSION"
+          test "$VERSION" = "${{ steps.version.outputs.version }}"
+          test "$BOOTC" = "1"
 
       # These `if` statements are so that pull requests for your custom images do not make it publish any packages under your name without you knowing
       # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
