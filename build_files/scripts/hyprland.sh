@@ -2,8 +2,11 @@
 
 set -ouex pipefail
 
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+source "${SCRIPTDIR}/dnf.sh"
+
 if [[ BUILD_HYPRLAND -eq "1" ]]; then
-    dnf5 install -y \
+    dnf5_guarded install -y \
         blueman \
         brightnessctl \
         grimshot \

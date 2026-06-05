@@ -2,6 +2,9 @@
 
 set -ouex pipefail
 
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+source "${SCRIPTDIR}/dnf.sh"
+
 if [[ BUILD_DOCKER -eq "1" ]]; then
     # Instructions from: https://docs.docker.com/engine/install/fedora/
     # Remove packages that clash with official docker package
@@ -18,12 +21,12 @@ if [[ BUILD_DOCKER -eq "1" ]]; then
         docker-engine
 
     # Install docker repo
-    dnf5 -y install dnf-plugins-core
+    dnf5_guarded install -y dnf-plugins-core
     dnf5 config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
     dnf5 config-manager setopt docker-ce-stable.enabled=0
 
     # Install docker
-    dnf5 install -y \
+    dnf5_guarded install -y \
         --enable-repo="docker-ce-stable" \
         docker-ce \
         docker-ce-cli \

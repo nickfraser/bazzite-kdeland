@@ -2,6 +2,9 @@
 
 set -ouex pipefail
 
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+source "${SCRIPTDIR}/dnf.sh"
+
 if [[ BUILD_CITRIX -eq "1" ]]; then
     # I'm checking for a checksum match, because I don't trust this script - too many assumption built-in
     CHECKSUM="1ebd3eae4e0ad97bc1a00d011d896e6b1d8e98206bc8815d8382b272576f348a"
@@ -16,12 +19,15 @@ if [[ BUILD_CITRIX -eq "1" ]]; then
     if [[ "${CHECKSUM}" == "${DL_CHECKSUM}" ]]; then
         if [[ BUILD_CITRIX_DEPS_ONLY -eq "1" ]]; then
             # Extract dependencies from rpm and install them (TODO: keep version constraints?)
-            rpm -qRp ${DL_TARGET} | awk '{print $1}' | grep -Ev '(/bin/sh|rpmlib)' | sort -u | xargs dnf5 -y install
+            mapfile -t deps < <(rpm -qRp ${DL_TARGET} | awk '{print $1}' | grep -Ev '(/bin/sh|rpmlib)' | sort -u)
+            if [[ "${#deps[@]}" -gt 0 ]]; then
+                dnf5_guarded install -y "${deps[@]}"
+            fi
         else
             rm /opt
             mkdir -p /usr/share/factory/opt
             ln -s /usr/share/factory/opt /opt # See: https://github.com/ublue-os/image-template/pull/100
-            dnf5 install -y ${DL_TARGET}
+            dnf5_guarded install -y ${DL_TARGET}
             rm /opt
             ln -s /var/opt /opt
         fi
