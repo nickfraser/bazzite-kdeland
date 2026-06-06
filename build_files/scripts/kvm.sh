@@ -2,9 +2,12 @@
 
 set -ouex pipefail
 
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+source "${SCRIPTDIR}/dnf.sh"
+
 if [[ BUILD_KVM -eq "1" ]]; then
     # Install KVM
-    dnf5 install -y \
+    dnf5_guarded install -y \
         @virtualization \
         qemu-kvm \
         libvirt \
