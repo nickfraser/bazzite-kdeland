@@ -7,8 +7,8 @@ source "${SCRIPTDIR}/dnf.sh"
 
 if [[ BUILD_CITRIX -eq "1" ]]; then
     # I'm checking for a checksum match, because I don't trust this script - too many assumption built-in
-    CHECKSUM="1ebd3eae4e0ad97bc1a00d011d896e6b1d8e98206bc8815d8382b272576f348a"
-    VERSION="25.08.0.88-0"
+    CHECKSUM="14f468ac47f14170d809eac4cf813fe7c88c394fea2317b543dc28b13135f79a"
+    VERSION="26.01.0.150-0"
     DL_TARGET=/tmp/citrix_workspace_x86_64.rpm
     # Scrape website to get the right download link
     url=$(wget -O - https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html | sed -ne '/ICAClient-rhel.*/ s/<a .* rel="\(.*\)" id="downloadcomponent.*">/https:\1/p' | sed -e 's/\r//g')
