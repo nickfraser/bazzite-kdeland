@@ -1,0 +1,122 @@
+---
+name: Validate build variants
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: "bazzite-kdeland-razer"
+  BUILD_FROM_IMAGE: "ghcr.io/nickfraser/bazzite-nvidia-open:stable-42"
+  BUILD_UPDATE: "0"
+  BUILD_SHELL: "0"
+  BUILD_HYPRLAND: "0"
+  BUILD_LAPTOP: "0"
+  BUILD_LAPTOP_CLAMSHELL: "0"
+  BUILD_LAPTOP_OPENRAZER: "0"
+  BUILD_CITRIX: "0"
+  BUILD_CITRIX_DEPS_ONLY: "0"
+  BUILD_DOCKER: "0"
+  BUILD_WINE: "0"
+  BUILD_KVM: "0"
+
+jobs:
+  validate_build_variants:
+    name: Validate ${{ matrix.scenario }}
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - scenario: all-off
+          - scenario: update-on
+            BUILD_UPDATE: "1"
+          - scenario: shell-on
+            BUILD_SHELL: "1"
+          - scenario: hyprland-on
+            BUILD_HYPRLAND: "1"
+          - scenario: laptop-on
+            BUILD_LAPTOP: "1"
+          - scenario: laptop-clamshell-on
+            BUILD_LAPTOP: "1"
+            BUILD_LAPTOP_CLAMSHELL: "1"
+          - scenario: citrix-on
+            BUILD_CITRIX: "1"
+          - scenario: citrix-deps-only-on
+            BUILD_CITRIX: "1"
+            BUILD_CITRIX_DEPS_ONLY: "1"
+          - scenario: docker-on
+            BUILD_DOCKER: "1"
+          - scenario: wine-on
+            BUILD_WINE: "1"
+          - scenario: kvm-on
+            BUILD_KVM: "1"
+
+    steps:
+      - name: Prepare environment
+        run: |
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> "${GITHUB_ENV}"
+
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+
+      - name: Mount BTRFS for podman storage
+        uses: ublue-os/container-storage-action@main
+
+      - name: Build image
+        env:
+          SCENARIO: ${{ matrix.scenario }}
+          BUILD_UPDATE: ${{ matrix.BUILD_UPDATE || env.BUILD_UPDATE }}
+          BUILD_SHELL: ${{ matrix.BUILD_SHELL || env.BUILD_SHELL }}
+          BUILD_HYPRLAND: ${{ matrix.BUILD_HYPRLAND || env.BUILD_HYPRLAND }}
+          BUILD_LAPTOP: ${{ matrix.BUILD_LAPTOP || env.BUILD_LAPTOP }}
+          BUILD_LAPTOP_CLAMSHELL: ${{ matrix.BUILD_LAPTOP_CLAMSHELL || env.BUILD_LAPTOP_CLAMSHELL }}
+          BUILD_LAPTOP_OPENRAZER: ${{ env.BUILD_LAPTOP_OPENRAZER }}
+          BUILD_CITRIX: ${{ matrix.BUILD_CITRIX || env.BUILD_CITRIX }}
+          BUILD_CITRIX_DEPS_ONLY: ${{ matrix.BUILD_CITRIX_DEPS_ONLY || env.BUILD_CITRIX_DEPS_ONLY }}
+          BUILD_DOCKER: ${{ matrix.BUILD_DOCKER || env.BUILD_DOCKER }}
+          BUILD_WINE: ${{ matrix.BUILD_WINE || env.BUILD_WINE }}
+          BUILD_KVM: ${{ matrix.BUILD_KVM || env.BUILD_KVM }}
+        run: |
+          build_arg_names=(
+            BUILD_FROM_IMAGE
+            BUILD_UPDATE
+            BUILD_SHELL
+            BUILD_HYPRLAND
+            BUILD_LAPTOP
+            BUILD_LAPTOP_CLAMSHELL
+            BUILD_LAPTOP_OPENRAZER
+            BUILD_CITRIX
+            BUILD_CITRIX_DEPS_ONLY
+            BUILD_DOCKER
+            BUILD_WINE
+            BUILD_KVM
+          )
+
+          build_args=()
+          for name in "${build_arg_names[@]}"; do
+            build_args+=(--build-arg "${name}=${!name}")
+          done
+
+          sudo podman build \
+            -f ./Containerfile \
+            "${build_args[@]}" \
+            --format docker \
+            --tag "localhost/${IMAGE_NAME}:ci-${SCENARIO}" \
+            .
+
+      - name: Verify image exists
+        env:
+          SCENARIO: ${{ matrix.scenario }}
+        run: |
+          sudo podman inspect "localhost/${IMAGE_NAME}:ci-${SCENARIO}" >/dev/null
