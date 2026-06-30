@@ -5,6 +5,8 @@ set -ouex pipefail
 SCRIPTDIR="$(dirname "$(realpath "$0")")"
 source "${SCRIPTDIR}/dnf.sh"
 
+readonly CITRIX_INSTALL_METHOD="noscripts"
+
 if [[ BUILD_CITRIX -eq "1" ]]; then
     # I'm checking for a checksum match, because I don't trust this script - too many assumption built-in
     CHECKSUM="14f468ac47f14170d809eac4cf813fe7c88c394fea2317b543dc28b13135f79a"
@@ -17,17 +19,26 @@ if [[ BUILD_CITRIX -eq "1" ]]; then
     wget ${url} -O ${DL_TARGET}
     DL_CHECKSUM=$(sha256sum ${DL_TARGET} | awk '{print $1}')
     if [[ "${CHECKSUM}" == "${DL_CHECKSUM}" ]]; then
-        if [[ BUILD_CITRIX_DEPS_ONLY -eq "1" ]]; then
-            # Extract dependencies from rpm and install them (TODO: keep version constraints?)
-            mapfile -t deps < <(rpm -qRp ${DL_TARGET} | awk '{print $1}' | grep -Ev '(/bin/sh|rpmlib)' | sort -u)
+        if [[ BUILD_CITRIX_DEPS_ONLY -eq "1" || "${CITRIX_INSTALL_METHOD}" == "noscripts" ]]; then
+            # Install dependencies separately when skipping Citrix RPM scriptlets.
+            mapfile -t deps < <(rpm -qRp "${DL_TARGET}" | awk '{print $1}' | grep -Ev '(/bin/sh|rpmlib)' | sort -u)
             if [[ "${#deps[@]}" -gt 0 ]]; then
                 dnf5_guarded install -y "${deps[@]}"
             fi
-        else
+        fi
+
+        if [[ BUILD_CITRIX_DEPS_ONLY -ne "1" ]]; then
             rm /opt
             mkdir -p /usr/share/factory/opt
             ln -s /usr/share/factory/opt /opt # See: https://github.com/ublue-os/image-template/pull/100
-            dnf5_guarded install -y ${DL_TARGET}
+
+            if [[ "${CITRIX_INSTALL_METHOD}" == "noscripts" ]]; then
+                rpm -i --nodeps --noscripts "${DL_TARGET}"
+            else
+                # Legacy path retained for reference; Citrix RPM scriptlets can hang in CI.
+                dnf5_guarded install -y "${DL_TARGET}"
+            fi
+
             rm /opt
             ln -s /var/opt /opt
         fi
