@@ -13,7 +13,11 @@ if [[ BUILD_CITRIX -eq "1" ]]; then
     VERSION="26.04.0.105-0"
     DL_TARGET=/tmp/citrix_workspace_x86_64.rpm
     # Match the RPM URL directly so extra flavor segments like "gcc-8" do not break parsing.
-    url=$(wget -O - https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html | tr -d '\r' | grep -oPm 1 '(?<=")//[^"]*ICAClient-rhel[^"]*\.x86_64\.rpm\?__[^"]*')
+    url=$({
+        wget -O - https://www.citrix.com/downloads/workspace-app/linux/workspace-app-for-linux-latest.html |
+            tr -d '\r' |
+            grep -oPm 1 '(?<=")//[^"]*ICAClient-rhel[^"]*\.x86_64\.rpm\?__[^"]*'
+    } || [[ $? -eq 141 ]])
     url="https:${url}"
 
     rpm_name="${url%%\?*}"
