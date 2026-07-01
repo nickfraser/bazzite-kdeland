@@ -6,8 +6,8 @@ TIMESTAMP=`date +%Y%m%d%H%M`
 IMAGE_TAG_PREFIX=$USER/bazzite-kdeland-local
 
 # BUILD ARGUMENTS:
-BUILD_FROM_IMAGE=ghcr.io/nickfraser/bazzite-nvidia-open:stable-42
-BUILD_UPDATE=1
+BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite-nvidia-open:stable-44
+BUILD_UPDATE=0
 BUILD_SHELL=1
 BUILD_HYPRLAND=1
 BUILD_LAPTOP=1
