@@ -64,14 +64,14 @@ The [build.yml](./.github/workflows/build.yml) is configured to build the image 
 
 I still need to install:
 
- - [ ] OpenRazer
+ - [ ] OpenRazer (currently unsupported in this custom image; the old install path pulls DKMS and fails on rpm-ostree)
  - [ ] QEMU/KVM
  - [ ] Citrix
 
 ## TODO:
 
 Some outstanding items:
- - [ ] Fix automatic installation of [OpenRazer](https://github.com/ublue-os/bazzite/blob/ebee55524617cf1339a7cbe3fabbecae9dd98bbb/system_files/desktop/shared/usr/share/ublue-os/just/82-bazzite-apps.just#L66-L93)
+ - [ ] Replace the broken [OpenRazer](https://github.com/ublue-os/bazzite/blob/ebee55524617cf1339a7cbe3fabbecae9dd98bbb/system_files/desktop/shared/usr/share/ublue-os/just/82-bazzite-apps.just#L66-L93) DKMS path with an image-side non-DKMS bundle; see [bundle_openrazer.md](./bundle_openrazer.md)
  - [x] Add option to install Citrix dependencies only
  - [x] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
  - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)
