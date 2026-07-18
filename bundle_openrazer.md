@@ -26,6 +26,8 @@ Make `BUILD_LAPTOP_OPENRAZER=1` work in this image without relying on
 - Prefer a reproducible image-side install that is verified during the build.
 - Avoid silently building an image that advertises OpenRazer support but does
   not actually contain the matching kernel module.
+- Support Secure Boot by installing a signed module and documenting the required
+  MOK enrollment.
 
 ## Full Feature Path
 
@@ -44,24 +46,33 @@ Tasks:
 Acceptance criteria:
 - No build or runtime hook in this repo invokes `ujust install-openrazer`.
 
-### 2. Choose a non-DKMS kernel module source
+### 2. Use a prebuilt, exact-kernel module source
 
 Likely files:
 - new `build_files/scripts/openrazer.sh`
 - optional repo/source configuration under `build_files/etc/...`
 
 Tasks:
-- Find or provide a prebuilt OpenRazer kernel module package that matches the
-  Bazzite OGC kernel.
-- Preferred option: reuse a Bazzite / `ublue-os/akmods` style prebuilt
-  `kmod-openrazer` flow if it is still available for the target kernel.
-- Fallback option: build or vendor your own `akmod-openrazer` /
-  `kmod-openrazer` artifacts for this image.
-- Reject any dependency chain that resolves to DKMS.
+- Copy `openrazer-kmod-common`, `kmod-openrazer`, and
+  `ublue-os-akmods-addons` RPMs from the Fedora 44 OGC `common` image published
+  by `ublue-os/akmods`. The image is built daily and currently builds OpenRazer
+  for this kernel flavor.
+- Pin the source OCI image by digest. Update its tag and digest together when
+  the Bazzite base image advances to a kernel that the selected artifact image
+  contains.
+- Install the UBlue akmods addons RPM with the kmod. It provides the signing
+  key and package configuration required by the signed module.
+- Fallback option: publish exact, prebuilt and signed `kmod-openrazer` RPMs for
+  the same `VERSION-RELEASE.ARCH` as the base image. Do not ship an
+  `akmod-openrazer` source package as a fallback: it needs a target-side build.
+- Reject an installed DKMS package. A legacy virtual
+  `openrazer-kernel-modules-dkms` capability is acceptable only when it is
+  provided by the prebuilt OpenRazer kmod package itself.
 
 Acceptance criteria:
-- A known package path exists that provides `razerkbd` for the exact kernel
-  family this image ships.
+- The selected kmod is built for the exact installed `kernel-core`
+  `VERSION-RELEASE.ARCH`, not only the same kernel flavor.
+- The kmod and its source OCI image are pinned and traceable from this repo.
 
 ### 3. Choose a daemon/userspace source that does not pull DKMS
 
@@ -70,17 +81,18 @@ Likely files:
 - packaging metadata if RPMs need to be rebuilt or patched
 
 Tasks:
-- Install `openrazer-daemon` without pulling
-  `openrazer-kernel-modules-dkms`.
-- If the upstream daemon RPM hard-requires DKMS, either:
-  - rebuild/package a patched daemon RPM with the DKMS dependency removed, or
-  - source the daemon from a packaging path that is compatible with immutable
-    images.
-- Account for any required group, udev, or service setup such as `plugdev`.
+- Install the pinned `openrazer-daemon` RPM from the signed
+  `hardware:razer` repository without installing `dkms`.
+- The daemon RPM's legacy `openrazer-kernel-modules-dkms` requirement is
+  provided by `openrazer-kmod-common`, which in turn requires the prebuilt
+  `kmod-openrazer`; verify that package relationship and reject an installed
+  `dkms` package.
+- Verify the udev rule from `openrazer-kmod-common` and the daemon's user
+  service unit.
 
 Acceptance criteria:
-- `openrazer-daemon` can be installed in the image build without any DKMS
-  dependency chain.
+- `openrazer-daemon` can be installed in the image build without installing
+  `dkms` or a DKMS module package.
 
 ### 4. Add a dedicated image-side installer
 
@@ -93,8 +105,8 @@ Tasks:
 - Add an `openrazer.sh` script responsible for:
   - installing the chosen prebuilt kernel module package
   - installing `openrazer-daemon`
-  - creating or verifying required groups
-  - enabling any required service if appropriate
+- Verify the package-provided udev rule and D-Bus/user-service activation
+  paths rather than modifying user accounts or manually enabling a service.
 - Keep it behind `BUILD_LAPTOP_OPENRAZER=1`.
 
 Acceptance criteria:
@@ -110,10 +122,9 @@ Files:
 Tasks:
 - Do not use `dnf5_guarded()` for OpenRazer kernel packages unless a narrowly
   scoped exception path is added.
-- Either:
-  - install the chosen kmod package with plain `dnf5` in `openrazer.sh`, or
-  - add a dedicated helper that only relaxes the package guard for the specific
-    OpenRazer packages.
+- Install exact local RPM paths copied from the pinned OCI artifact. Limit any
+  dependency resolution to the required OpenRazer packages and do not allow it
+  to upgrade or replace the base kernel, NVIDIA, Mesa, or DRM packages.
 - Keep the generic guard intact for the rest of the image.
 
 Acceptance criteria:
@@ -129,7 +140,11 @@ Files:
 Tasks:
 - Fail the build if OpenRazer is enabled but the module is not present.
 - Suggested checks:
-  - `modinfo razerkbd`
+  - query the installed `kernel-core` release and use `modinfo -k <release>`
+    for `razerkbd`; do not use the container host's `uname -r`
+  - confirm the module file is under `/usr/lib/modules/<release>` and owned by
+    the selected kmod RPM
+  - check `modinfo -F signer` and retain the UBlue signing-key package
   - package presence for the chosen kmod
   - package presence for `openrazer-daemon`
 
@@ -146,7 +161,10 @@ Tasks:
 - Document how to confirm the feature works after deployment:
   - `modinfo razerkbd`
   - `lsmod | grep razer`
-  - `systemctl status openrazer-daemon`
+   - `systemctl --user status openrazer-daemon`
+  - on Secure Boot systems, check `mokutil --sb-state` and verify that the
+    signer reported by `modinfo -F signer razerkbd` is enrolled before trying
+    to load the module
   - verify device behavior through the daemon/frontend
 
 Acceptance criteria:
@@ -162,6 +180,10 @@ Tasks:
   compatible.
 - Note that newer devices may fail if daemon and kmod support diverge.
 - Document the chosen package source and why it was selected.
+- Document the pinned OCI artifact tag and digest, its exact-kernel coupling,
+  and the procedure for updating it alongside the base image.
+- Document the Secure Boot enrollment requirement and recovery steps when a
+  module is rejected.
 
 Acceptance criteria:
 - Future maintenance of the feature is understandable from repo docs alone.
@@ -173,29 +195,25 @@ Acceptance criteria:
 3. Pick the daemon/userspace source.
 4. Implement `build_files/scripts/openrazer.sh`.
 5. Integrate it behind `BUILD_LAPTOP_OPENRAZER=1`.
-6. Add build-time verification.
-7. Add README updates for deployment verification and maintenance notes.
+6. Add an enabled OpenRazer build variant to CI.
+7. Add exact-kernel and signing verification.
+8. Add README updates for deployment verification and maintenance notes.
 
 ## Recommended Strategy
 
-Short term:
-- Keep OpenRazer disabled in this repo.
-
-Medium term:
-- Implement a full image-side OpenRazer installer using prebuilt kmods plus the
-  userspace daemon.
+Implemented:
+- Use the pinned UBlue OGC artifact for the prebuilt signed modules.
+- Install the guarded, version-pinned daemon after the actual kmod package
+  satisfies its legacy virtual DKMS capability.
+- Build and verify an OpenRazer-enabled CI variant.
 
 Explicit non-goal:
 - Do not attempt to rescue the old DKMS path on an immutable system.
 
-## Decision Still Needed Before Full Implementation
+## Selected Sources
 
-There are two ways to complete the future work:
-
-1. Reuse an existing prebuilt `kmod-openrazer` source compatible with the
-   Bazzite OGC kernel.
-2. Vendor or rebuild the required OpenRazer kernel-module and daemon RPMs for
-   this image if no suitable upstream non-DKMS source exists.
-
-The first option is preferable. If it is not available, the second option is
-the realistic path to shipping the feature in this repo.
+The UBlue Fedora 44 OGC `common` artifact is the selected primary kmod source.
+The selected daemon is `openrazer-daemon` 3.12.4-1.1 from the signed
+`hardware:razer` repository. If either source stops carrying compatible
+packages, publish and pin replacement prebuilt, signed kmod RPMs rather than
+falling back to an akmod or DKMS install.

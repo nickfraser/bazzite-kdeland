@@ -39,7 +39,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed when in SDDM, default=1
- - `BUILD_LAPTOP_OPENRAZER=<0|1>` install open-razer utilities, default=0
+  - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon, default=0
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=0
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
@@ -64,14 +64,42 @@ The [build.yml](./.github/workflows/build.yml) is configured to build the image 
 
 I still need to install:
 
- - [ ] OpenRazer (currently unsupported in this custom image; the old install path pulls DKMS and fails on rpm-ostree)
  - [ ] QEMU/KVM
  - [ ] Citrix
+
+### OpenRazer
+
+Set `BUILD_LAPTOP=1` and `BUILD_LAPTOP_OPENRAZER=1` to include OpenRazer. The
+image uses the pinned Fedora 44 OGC `ublue-os/akmods` artifact for prebuilt,
+signed modules and installs `openrazer-daemon` 3.12.4-1.1. It does not install
+DKMS.
+
+After reboot, verify the deployed image with:
+
+```bash
+kernel_release=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}' kernel-core)
+modinfo -k "$kernel_release" razerkbd
+lsmod | grep razer
+systemctl --user status openrazer-daemon
+```
+
+On Secure Boot systems, enroll the UBlue akmods key before loading the module,
+then reboot and complete enrollment in MokManager:
+
+```bash
+sudo mokutil --import /etc/pki/akmods/certs/akmods-ublue.der
+mokutil --sb-state
+modinfo -F signer razerkbd
+```
+
+The kmod artifact is coupled to the exact Bazzite OGC kernel release. Update
+the pinned `OPENRAZER_AKMODS_IMAGE` digest in `Containerfile` only with a
+matching base image and after the OpenRazer CI variant succeeds.
 
 ## TODO:
 
 Some outstanding items:
- - [ ] Replace the broken [OpenRazer](https://github.com/ublue-os/bazzite/blob/ebee55524617cf1339a7cbe3fabbecae9dd98bbb/system_files/desktop/shared/usr/share/ublue-os/just/82-bazzite-apps.just#L66-L93) DKMS path with an image-side non-DKMS bundle; see [bundle_openrazer.md](./bundle_openrazer.md)
+  - [x] Replace the broken [OpenRazer](https://github.com/ublue-os/bazzite/blob/ebee55524617cf1339a7cbe3fabbecae9dd98bbb/system_files/desktop/shared/usr/share/ublue-os/just/82-bazzite-apps.just#L66-L93) DKMS path with an image-side non-DKMS bundle; see [bundle_openrazer.md](./bundle_openrazer.md)
  - [x] Add option to install Citrix dependencies only
  - [x] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
  - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)
