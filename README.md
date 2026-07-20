@@ -56,6 +56,38 @@ It now defaults to `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base 
 The [build.sh](./build_files/build.sh) file is called from your Containerfile.
 It is the entry-point for installing all other applications.
 
+## User-Home Integration
+
+The image supplies packages and system configuration, but it does not modify a
+specific user's home directory. The opt-in files under
+[`user_home/`](./user_home) provide the Hyprland integration required for KDE
+apps, XDG Desktop Portals, and graphical polkit prompts.
+
+After installing or rebasing to the image, install those files for the current
+user and add the source directive to the user's Hyprland configuration:
+
+```bash
+cp -a user_home/. "$HOME/"
+systemctl --user daemon-reload
+```
+
+```ini
+source = ~/.config/hypr/bazzite-kdeland.conf
+```
+
+Log out and back in to Hyprland after adding the directive. The module starts
+the Plasma polkit agent and imports the graphical-session environment before
+restarting `xdg-desktop-portal`. The portal user unit is a full replacement
+because systemd dependency directives cannot be cleared in a drop-in.
+
+The template intentionally does not include personal Hyprland settings such
+as monitor layout, key bindings, themes, application launchers, or hardware
+scripts.
+
+Diagnostic scripts are installed in `~/bin/`. Run them by full path, for
+example `~/bin/audit-portal-runtime`, when collecting information for a bug
+report.
+
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).

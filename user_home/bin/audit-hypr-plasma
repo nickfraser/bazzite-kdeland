@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -u
+
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+HYPRCONF="${HOME}/.config/hypr/hyprland.conf"
+KCMINPUTRC="${HOME}/.config/kcminputrc"
+KDEGLOBALS="${HOME}/.config/kdeglobals"
+GTK3_SETTINGS="${HOME}/.config/gtk-3.0/settings.ini"
+GTK4_SETTINGS="${HOME}/.config/gtk-4.0/settings.ini"
+
+if command -v kreadconfig6 >/dev/null 2>&1; then
+  KREADCONFIG="$(command -v kreadconfig6)"
+elif command -v kreadconfig5 >/dev/null 2>&1; then
+  KREADCONFIG="$(command -v kreadconfig5)"
+else
+  KREADCONFIG=""
+fi
+
+section() {
+  printf '\n\n===== %s =====\n' "$1"
+}
+
+run() {
+  printf '\n$ %s\n' "$*"
+  "$@" 2>&1 || true
+}
+
+section "System basics"
+run uname -a
+run cat /etc/os-release
+run bash -lc 'hyprctl version 2>/dev/null || Hyprland --version 2>/dev/null || true'
+run bash -lc 'printf "XDG_CURRENT_DESKTOP=%s\n" "${XDG_CURRENT_DESKTOP-}"; printf "XDG_SESSION_DESKTOP=%s\n" "${XDG_SESSION_DESKTOP-}"; printf "XDG_MENU_PREFIX=%s\n" "${XDG_MENU_PREFIX-}"; printf "DESKTOP_SESSION=%s\n" "${DESKTOP_SESSION-}"'
+
+section "Plasma appearance source of truth"
+if [[ -n "${KREADCONFIG}" ]]; then
+  run bash -lc 'printf "Using %s\n" "$1"' _ "${KREADCONFIG}"
+  run "${KREADCONFIG}" --file "${KCMINPUTRC}" --group Mouse --key cursorTheme
+  run "${KREADCONFIG}" --file "${KCMINPUTRC}" --group Mouse --key cursorSize
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group General --key font
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group General --key fixed
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group General --key smallestReadableFont
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group General --key ColorScheme
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group KDE --key widgetStyle
+  run "${KREADCONFIG}" --file "${KDEGLOBALS}" --group Icons --key Theme
+else
+  printf '\nNo kreadconfig binary found. Falling back to raw file reads only.\n'
+fi
+run bash -lc 'grep -nA5 "^\[Mouse\]" "$1" 2>/dev/null || true' _ "${KCMINPUTRC}"
+run bash -lc 'grep -nE "^(ColorScheme|font|fixed|smallestReadableFont)" "$1" 2>/dev/null || true' _ "${KDEGLOBALS}"
+run bash -lc 'grep -nA5 "^\[Icons\]" "$1" 2>/dev/null || true' _ "${KDEGLOBALS}"
+
+section "GTK theme, icon, cursor, and font settings"
+run bash -lc 'grep -E "gtk-(theme-name|icon-theme-name|cursor-theme-name|font-name)" "$1" 2>/dev/null || true' _ "${GTK3_SETTINGS}"
+run bash -lc 'grep -E "gtk-(theme-name|icon-theme-name|cursor-theme-name|font-name)" "$1" 2>/dev/null || true' _ "${GTK4_SETTINGS}"
+run bash -lc 'gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null || true'
+run bash -lc 'gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null || true'
+run bash -lc 'gsettings get org.gnome.desktop.interface cursor-theme 2>/dev/null || true'
+run bash -lc 'gsettings get org.gnome.desktop.interface cursor-size 2>/dev/null || true'
+
+section "Current Hyprland config snippet"
+run bash -lc 'grep -nE "force_default_wallpaper|disable_hyprland_logo|XCURSOR|HYPRCURSOR|QT_QPA_PLATFORMTHEME|QT_STYLE_OVERRIDE|XDG_MENU_PREFIX|guiutils|workspace_swipe|new_window_takes_over_fullscreen|suppressevent|nofocus|wallpaper|swaybg|hyprpaper|swww" "$1" 2>/dev/null || true' _ "${HYPRCONF}"
+
+section "Current Hyprland runtime options"
+run bash -lc 'hyprctl getoption misc:force_default_wallpaper 2>/dev/null || true'
+run bash -lc 'hyprctl getoption misc:disable_hyprland_logo 2>/dev/null || true'
+run bash -lc 'hyprctl getoption cursor:sync_gsettings_theme 2>/dev/null || true'
+
+section "Wallpaper-related tools and processes"
+run bash -lc 'command -v swaybg || true'
+run bash -lc 'command -v hyprpaper || true'
+run bash -lc 'command -v swww || true'
+run bash -lc 'ps -ef | grep -E "swaybg|hyprpaper|swww" | grep -v grep || true'
+
+section "Current session environment relevant to Qt and KDE apps"
+run bash -lc 'env | grep -E "^(QT_|XDG_|XCURSOR|HYPRCURSOR|KDE_)" | sort || true'
+
+section "Dolphin launcher context"
+run bash -lc 'command -v dolphin || true'
+run bash -lc 'grep -n . "$1" 2>/dev/null || true' _ "${SCRIPTDIR}/fm"
+
+section "Optional package checks"
+run bash -lc 'rpm -q hyprland-guiutils 2>/dev/null || true'
+run bash -lc 'rpm -qa | grep -Ei "hyprland-guiutils|qt6ct|qt5ct|plasma.*integration|breeze-gtk" || true'

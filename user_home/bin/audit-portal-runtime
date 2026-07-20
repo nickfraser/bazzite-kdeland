@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -u
+
+section() {
+  printf '\n\n===== %s =====\n' "$1"
+}
+
+run() {
+  printf '\n$ %s\n' "$*"
+  "$@" 2>&1 || true
+}
+
+section "Session target state"
+run bash -lc 'systemctl --user --no-pager --full status graphical-session.target'
+run bash -lc 'systemctl --user is-active graphical-session.target'
+
+section "Effective portal unit"
+run bash -lc 'systemctl --user cat xdg-desktop-portal.service'
+run bash -lc 'systemctl --user show xdg-desktop-portal.service -p FragmentPath -p DropInPaths -p PartOf -p Requisite -p After'
+
+section "Portal package files"
+run bash -lc 'rpm -ql xdg-desktop-portal-kde 2>/dev/null | grep -E "portal|systemd|dbus" || true'
+run bash -lc 'rpm -ql xdg-desktop-portal-hyprland 2>/dev/null | grep -E "portal|systemd|dbus" || true'
+run bash -lc 'rpm -ql xdg-desktop-portal 2>/dev/null | grep -E "portal|systemd|dbus" || true'
+run bash -lc 'ls /usr/share/xdg-desktop-portal/portals 2>/dev/null || true'
+
+section "User unit availability"
+run bash -lc 'systemctl --user list-unit-files | grep -E "xdg-desktop-portal|plasma-xdg-desktop-portal-kde" || true'
+
+section "Relevant user service status"
+run bash -lc 'systemctl --user --no-pager --full status \
+  xdg-desktop-portal.service \
+  xdg-desktop-portal-gtk.service \
+  xdg-desktop-portal-hyprland.service \
+  plasma-xdg-desktop-portal-kde.service'
+
+section "Recent portal logs"
+run bash -lc 'journalctl --user -u xdg-desktop-portal.service -b --no-pager || true'
+run bash -lc 'journalctl --user -u xdg-desktop-portal-gtk.service -b --no-pager || true'
+run bash -lc 'journalctl --user -u xdg-desktop-portal-hyprland.service -b --no-pager || true'
+run bash -lc 'journalctl --user -u plasma-xdg-desktop-portal-kde.service -b --no-pager || true'
+
+section "User session environment"
+run bash -lc 'systemctl --user show-environment | grep -E "^(DISPLAY|WAYLAND_DISPLAY|XDG_CURRENT_DESKTOP|XDG_SESSION_TYPE|XDG_MENU_PREFIX)=" | sort || true'
+run bash -lc 'printf "DISPLAY=%s\n" "${DISPLAY-}"; printf "WAYLAND_DISPLAY=%s\n" "${WAYLAND_DISPLAY-}"; printf "XDG_CURRENT_DESKTOP=%s\n" "${XDG_CURRENT_DESKTOP-}"; printf "XDG_SESSION_TYPE=%s\n" "${XDG_SESSION_TYPE-}"; printf "XDG_MENU_PREFIX=%s\n" "${XDG_MENU_PREFIX-}"'
+
+section "D-Bus portal names"
+run bash -lc 'busctl --user list | grep -i portal || true'
+
+section "Portal backend registration"
+run bash -lc 'grep -R . /usr/share/xdg-desktop-portal/*.conf /usr/share/xdg-desktop-portal/portals/*.portal ~/.config/xdg-desktop-portal/portals.conf 2>/dev/null || true'
+
+section "Manual live test commands"
+printf '%s\n' \
+  'If you want to test a live portal restart after collecting this log, run:' \
+  '  systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_MENU_PREFIX' \
+  '  dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_MENU_PREFIX' \
+  '  systemctl --user start graphical-session.target' \
+  '  systemctl --user restart xdg-desktop-portal.service'

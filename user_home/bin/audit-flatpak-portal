@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -u
+
+section() {
+  printf '\n\n===== %s =====\n' "$1"
+}
+
+run() {
+  printf '\n$ %s\n' "$*"
+  "$@" 2>&1 || true
+}
+
+section "Portal packages"
+run bash -lc 'rpm -q xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-hyprland'
+
+section "Portal services"
+run bash -lc 'systemctl --user --no-pager --full status \
+  xdg-desktop-portal.service \
+  xdg-desktop-portal-gtk.service \
+  xdg-desktop-portal-kde.service \
+  xdg-desktop-portal-hyprland.service'
+
+section "User service environment"
+run bash -lc 'systemctl --user show-environment | grep -E "^(DISPLAY|WAYLAND_DISPLAY|XDG_CURRENT_DESKTOP|XDG_SESSION_TYPE|XDG_MENU_PREFIX)=" | sort'
+
+section "Flatpak overrides"
+run bash -lc 'flatpak override --show org.mozilla.firefox'
+run bash -lc 'flatpak override --show org.remmina.Remmina'
+
+section "Flatpak permissions"
+run bash -lc 'flatpak info --show-permissions org.mozilla.firefox'
+run bash -lc 'flatpak info --show-permissions org.remmina.Remmina'
+
+section "Flatpak runtime info"
+run bash -lc 'flatpak info org.mozilla.firefox'
+run bash -lc 'flatpak info org.remmina.Remmina'
+
+section "Firefox manual check"
+printf '%s\n' \
+  'In Firefox, visit about:support and note:' \
+  '  Window Protocol: wayland or xwayland' \
+  'If fonts still look too large, also note whether about:support mentions Flatpak or sandbox-specific runtime details.'
