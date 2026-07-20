@@ -84,10 +84,6 @@ The template intentionally does not include personal Hyprland settings such
 as monitor layout, key bindings, themes, application launchers, or hardware
 scripts.
 
-Diagnostic scripts are installed in `~/bin/`. Run them by full path, for
-example `~/bin/audit-portal-runtime`, when collecting information for a bug
-report.
-
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).
