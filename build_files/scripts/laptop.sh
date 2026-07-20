@@ -16,8 +16,7 @@ if [[ BUILD_LAPTOP -eq "1" ]]; then
             'BUILD_LAPTOP_OPENRAZER=1 is temporarily unsupported in this image.' \
             'The old ujust install-openrazer path pulls openrazer-kernel-modules-dkms,' \
             'which fails on rpm-ostree/bootc systems because DKMS writes to /var/lib/dkms' \
-            'during the transaction.' \
-            'See bundle_openrazer.md in the repo for the full image-side implementation plan.' >&2
+            'during the transaction. No image-compatible replacement is available yet.' >&2
         exit 1
     fi
 fi
