@@ -28,7 +28,7 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
     shopt -u nullglob
 
     if (( ${#kmod_rpms[@]} != 3 )); then
-        printf '%s\n' 'Pinned UBlue artifact does not contain one exact-kernel OpenRazer RPM set.' >&2
+        printf '%s\n' 'Latest UBlue artifact does not contain one exact-kernel OpenRazer RPM set.' >&2
         exit 1
     fi
 

@@ -39,7 +39,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed in the Plasma Login Manager. Only has an effect if `BUILD_LAPTOP=1`, default=1
- - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon. It tracks the latest OGC akmods artifact and fails the build unless it matches the base image's exact kernel release, default=0
+ - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon. It tracks the latest OGC akmods artifact and fails the build unless it matches the base image's exact kernel release, default=1
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=0
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
@@ -49,9 +49,9 @@ In order to control what packages are installed you can modify the following var
 ## Build Locally
 
 In order to debug various issues, `build-local.sh` is setup to build the image
-with the published profile: updates, Citrix, and OpenRazer are disabled; the
-shell, Hyprland, laptop, Docker, Wine, and KVM options are enabled. It defaults
-to `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
+with the published profile: updates and Citrix are disabled; the shell,
+Hyprland, laptop, OpenRazer, Docker, Wine, and KVM options are enabled. It
+defaults to `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
 
 ## build.sh
 
@@ -98,10 +98,32 @@ I still need to install:
 
 ### OpenRazer
 
-Set `BUILD_LAPTOP=1` and `BUILD_LAPTOP_OPENRAZER=1` to include OpenRazer. The
-image uses the latest Fedora 44 OGC `ublue-os/akmods` artifact for prebuilt,
-signed modules and installs `openrazer-daemon` 3.12.4-1.1. It does not install
-DKMS.
+The published image includes the signed OpenRazer kernel module and
+`openrazer-daemon` 3.12.4-1.1. It does not install DKMS.
+
+After rebasing, add the desktop user to the group used by the installed udev
+rule, then log out and back in or reboot:
+
+```bash
+sudo usermod -aG plugdev "$USER"
+```
+
+Install the optional Polychromatic frontend:
+
+```bash
+flatpak install --user flathub app.polychromatic.controller
+```
+
+Opening Polychromatic activates the daemon through the user D-Bus service. It
+is normal for `systemctl --user status openrazer-daemon` to show inactive until
+a frontend connects; do not manually enable the service.
+
+To start the optional Polychromatic tray applet in Hyprland, add this to the
+user's `hyprland.conf`:
+
+```ini
+exec-once = flatpak run --command=polychromatic-tray-applet app.polychromatic.controller
+```
 
 After reboot, verify the deployed image with:
 
@@ -121,14 +143,16 @@ mokutil --sb-state
 modinfo -F signer razerkbd
 ```
 
-The kmod artifact is coupled to the exact Bazzite OGC kernel release. Both the
-base image and akmods image are refreshed for every build; the build fails if
-their kernel releases differ.
+The kmod artifact is coupled to the exact Bazzite OGC kernel release. Published
+CI builds start from fresh base and akmods images; the build fails if their
+kernel releases differ.
+
+If cached images cause local kernel drift, consider adding `--pull=always` to
+the local build command in a future update.
 
 ## TODO:
 
 Some outstanding items:
- - [ ] Revisit OpenRazer image-side packaging if the latest Bazzite and akmods images repeatedly drift; see [bundle_openrazer.md](./bundle_openrazer.md)
  - [x] Add option to install Citrix dependencies only
  - [x] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
  - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)
