@@ -39,7 +39,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed in the Plasma Login Manager. Only has an effect if `BUILD_LAPTOP=1`, default=1
- - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon. It requires a pinned base image and akmods artifact with the same exact kernel release, default=0
+ - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon. It tracks the latest OGC akmods artifact and fails the build unless it matches the base image's exact kernel release, default=0
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=0
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
@@ -99,7 +99,7 @@ I still need to install:
 ### OpenRazer
 
 Set `BUILD_LAPTOP=1` and `BUILD_LAPTOP_OPENRAZER=1` to include OpenRazer. The
-image uses the pinned Fedora 44 OGC `ublue-os/akmods` artifact for prebuilt,
+image uses the latest Fedora 44 OGC `ublue-os/akmods` artifact for prebuilt,
 signed modules and installs `openrazer-daemon` 3.12.4-1.1. It does not install
 DKMS.
 
@@ -121,14 +121,14 @@ mokutil --sb-state
 modinfo -F signer razerkbd
 ```
 
-The kmod artifact is coupled to the exact Bazzite OGC kernel release. Update
-the pinned `OPENRAZER_AKMODS_IMAGE` digest in `Containerfile` only with a
-matching, digest-pinned base image and after the OpenRazer CI variant succeeds.
+The kmod artifact is coupled to the exact Bazzite OGC kernel release. Both the
+base image and akmods image are refreshed for every build; the build fails if
+their kernel releases differ.
 
 ## TODO:
 
 Some outstanding items:
- - [ ] Pin a matching Bazzite base image and OpenRazer kmod artifact; see [bundle_openrazer.md](./bundle_openrazer.md)
+ - [ ] Revisit OpenRazer image-side packaging if the latest Bazzite and akmods images repeatedly drift; see [bundle_openrazer.md](./bundle_openrazer.md)
  - [x] Add option to install Citrix dependencies only
  - [x] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
  - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)

@@ -1,11 +1,11 @@
 # BUILD_FROM_IMAGE definition MUST be the first (uncommented) line: https://stackoverflow.com/a/78364729
 ARG BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite-nvidia-open:stable-44
-ARG OPENRAZER_AKMODS_IMAGE=ghcr.io/ublue-os/akmods:ogc-44@sha256:68f16f0569ce8826bb545e3714577e6c20a0ffb1c7bc50e5f64db5d7ebef35dd
+ARG OPENRAZER_AKMODS_IMAGE=ghcr.io/ublue-os/akmods:ogc-44
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 COPY build_files /
 
-# Pinned UBlue Fedora 44 OGC kmods, including OpenRazer and its signing key.
+# Latest UBlue Fedora 44 OGC kmods, including OpenRazer and its signing key.
 FROM ${OPENRAZER_AKMODS_IMAGE} AS openrazer_rpms
 
 # Base Image

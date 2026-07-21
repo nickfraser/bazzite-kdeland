@@ -57,9 +57,8 @@ Tasks:
   `ublue-os-akmods-addons` RPMs from the Fedora 44 OGC `common` image published
   by `ublue-os/akmods`. The image is built daily and currently builds OpenRazer
   for this kernel flavor.
-- Pin the source OCI image by digest. Update its tag and digest together when
-  the Bazzite base image advances to a kernel that the selected artifact image
-  contains.
+- Track the latest Fedora 44 OGC artifact alongside the latest Bazzite base
+  image. Force each build to pull both images and reject mismatched kernels.
 - Install the UBlue akmods addons RPM with the kmod. It provides the signing
   key and package configuration required by the signed module.
 - Fallback option: publish exact, prebuilt and signed `kmod-openrazer` RPMs for
@@ -72,7 +71,7 @@ Tasks:
 Acceptance criteria:
 - The selected kmod is built for the exact installed `kernel-core`
   `VERSION-RELEASE.ARCH`, not only the same kernel flavor.
-- The kmod and its source OCI image are pinned and traceable from this repo.
+- The kmod matches the exact kernel installed by the freshly pulled base image.
 
 ### 3. Choose a daemon/userspace source that does not pull DKMS
 
@@ -122,7 +121,7 @@ Files:
 Tasks:
 - Do not use `dnf5_guarded()` for OpenRazer kernel packages unless a narrowly
   scoped exception path is added.
-- Install exact local RPM paths copied from the pinned OCI artifact. Limit any
+- Install exact local RPM paths copied from the current OCI artifact. Limit any
   dependency resolution to the required OpenRazer packages and do not allow it
   to upgrade or replace the base kernel, NVIDIA, Mesa, or DRM packages.
 - Keep the generic guard intact for the rest of the image.
@@ -180,8 +179,8 @@ Tasks:
   compatible.
 - Note that newer devices may fail if daemon and kmod support diverge.
 - Document the chosen package source and why it was selected.
-- Document the pinned OCI artifact tag and digest, its exact-kernel coupling,
-  and the procedure for updating it alongside the base image.
+- Document the latest-tracking OCI artifact tag, its exact-kernel coupling, and
+  the build failure expected while upstream images are temporarily out of sync.
 - Document the Secure Boot enrollment requirement and recovery steps when a
   module is rejected.
 
@@ -202,7 +201,7 @@ Acceptance criteria:
 ## Recommended Strategy
 
 Implemented:
-- Use the pinned UBlue OGC artifact for the prebuilt signed modules.
+- Use the latest UBlue OGC artifact for the prebuilt signed modules.
 - Install the guarded, version-pinned daemon after the actual kmod package
   satisfies its legacy virtual DKMS capability.
 - Build and verify an OpenRazer-enabled CI variant.
