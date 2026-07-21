@@ -1,0 +1,17 @@
+# Full user override of the stock xdg-desktop-portal unit.
+#
+# The packaged unit binds itself to graphical-session.target with Requisite=,
+# but this Hyprland session path does not currently activate that target.
+# A drop-in is not sufficient here because systemd does not allow dependency
+# directives like Requisite=/After=/PartOf= to be cleared in a drop-in.
+# Ship a full user unit instead and let Hyprland restart the portal after
+# importing the runtime environment into systemd and D-Bus.
+
+[Unit]
+Description=Portal service
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.portal.Desktop
+ExecStart=/usr/libexec/xdg-desktop-portal
+Slice=session.slice
