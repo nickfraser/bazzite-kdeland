@@ -19,7 +19,7 @@ BUILD_DOCKER=1
 BUILD_WINE=1
 BUILD_KVM=1
 
-docker build \
+sudo podman build \
     -f Containerfile \
     --tag=${IMAGE_TAG_PREFIX}:${TIMESTAMP} \
     --tag=${IMAGE_TAG_PREFIX}:stable \
