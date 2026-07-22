@@ -98,8 +98,9 @@ I still need to install:
 
 ### OpenRazer
 
-The published image includes the signed OpenRazer kernel module and
-`openrazer-daemon` 3.12.4-1.1. It does not install DKMS.
+The published image includes the signed OpenRazer kernel module and the latest
+available `openrazer-daemon`. It does not install DKMS. The daemon updates when
+the image is rebuilt and published.
 
 After rebasing, add the desktop user to the group used by the installed udev
 rule, then log out and back in or reboot:

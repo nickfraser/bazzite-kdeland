@@ -7,7 +7,6 @@ source "${SCRIPTDIR}/dnf.sh"
 
 if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
     readonly OPENRAZER_RPMS=/var/tmp/openrazer-rpms/rpms
-    readonly OPENRAZER_DAEMON_VERSION=3.12.4-1.1
     readonly UBLUE_AKMODS_CERT=/etc/pki/akmods/certs/akmods-ublue.der
     readonly UBLUE_AKMODS_CERT_FINGERPRINT='4E:5C:68:47:4C:B1:33:FD:89:84:D9:59:97:62:CE:CE:91:00:C3:E6:CD:8A:97:09:AE:AA:BD:85:DD:9E:70:D1'
 
@@ -41,7 +40,7 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
     install -Dm0644 "${SCRIPTDIR}/etc/yum.repos.d/hardware-razer.repo" \
         /etc/yum.repos.d/hardware-razer.repo
     trap 'rm -f /etc/yum.repos.d/hardware-razer.repo' EXIT
-    dnf5_guarded install -y "openrazer-daemon-${OPENRAZER_DAEMON_VERSION}"
+    dnf5_guarded install -y openrazer-daemon
 
     module_path="$(find "/usr/lib/modules/${kernel_release}" -type f -name 'razerkbd.ko*' -print -quit)"
     test -n "${module_path}"
