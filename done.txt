@@ -1,0 +1,6 @@
+x 2025-10-18 2025-09-25 Install docker +bazzite-kdeland asana_gid:1211466297568638 id:bazzite-kdeland-chZMJxP1
+x 2025-12-24 2025-09-25 Install KVM +bazzite-kdeland asana_gid:1211466297568641 id:bazzite-kdeland-YA9Zal6a
+x 2025-11-26 2025-10-18 Switch from DX -> regular base +bazzite-kdeland asana_gid:1211678787904602 id:bazzite-kdeland-xsRd6zGg
+x 2026-05-09 2025-10-18 Try steam alternative +bazzite-kdeland asana_gid:1211678787904605 id:bazzite-kdeland-SdWmFR4o
+x 2025-11-26 2025-10-18 Install wine (natively) +bazzite-kdeland asana_gid:1211678787904608 id:bazzite-kdeland-qnUFFuRy
+x 2026-01-24 2026-01-01 Setup bash config with `~/.bashrc.d/` +bazzite-kdeland asana_gid:1212633605016704 id:bazzite-kdeland-9y3rPro0
