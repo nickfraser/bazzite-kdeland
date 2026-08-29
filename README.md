@@ -52,19 +52,6 @@ with the published profile: updates and Citrix are disabled; Hyprland, laptop,
 OpenRazer, Docker, Wine, and KVM options are enabled. It defaults to
 `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
 
-## Homebrew-Managed Applications
-
-General command-line tools and the Kitty terminal are installed per user. First
-install [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux), then from
-a checkout of this repository install the declared applications with:
-
-```bash
-brew bundle install --file Brewfile
-```
-
-`podman-compose-host` uses the image-provided `podman` executable and supports
-Linux x86_64 only.
-
 ## build.sh
 
 The [build.sh](./build_files/build.sh) file is called from your Containerfile.
