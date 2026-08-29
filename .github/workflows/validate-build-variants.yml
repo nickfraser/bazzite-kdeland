@@ -14,7 +14,7 @@ env:
   IMAGE_NAME: "bazzite-kdeland-razer"
   BUILD_FROM_IMAGE: "ghcr.io/ublue-os/bazzite-nvidia-open:stable-44"
   BUILD_UPDATE: "0"
-  BUILD_SHELL: "0"
+  BUILD_PODMAN_COMPOSE: "0"
   BUILD_HYPRLAND: "0"
   BUILD_LAPTOP: "0"
   BUILD_LAPTOP_CLAMSHELL: "0"
@@ -41,8 +41,8 @@ jobs:
           - scenario: all-off
           - scenario: update-on
             BUILD_UPDATE: "1"
-          - scenario: shell-on
-            BUILD_SHELL: "1"
+          - scenario: podman-compose-on
+            BUILD_PODMAN_COMPOSE: "1"
           - scenario: hyprland-on
             BUILD_HYPRLAND: "1"
           - scenario: laptop-on
@@ -80,7 +80,7 @@ jobs:
         env:
           SCENARIO: ${{ matrix.scenario }}
           BUILD_UPDATE: ${{ matrix.BUILD_UPDATE || env.BUILD_UPDATE }}
-          BUILD_SHELL: ${{ matrix.BUILD_SHELL || env.BUILD_SHELL }}
+          BUILD_PODMAN_COMPOSE: ${{ matrix.BUILD_PODMAN_COMPOSE || env.BUILD_PODMAN_COMPOSE }}
           BUILD_HYPRLAND: ${{ matrix.BUILD_HYPRLAND || env.BUILD_HYPRLAND }}
           BUILD_LAPTOP: ${{ matrix.BUILD_LAPTOP || env.BUILD_LAPTOP }}
           BUILD_LAPTOP_CLAMSHELL: ${{ matrix.BUILD_LAPTOP_CLAMSHELL || env.BUILD_LAPTOP_CLAMSHELL }}
@@ -94,7 +94,7 @@ jobs:
           build_arg_names=(
             BUILD_FROM_IMAGE
             BUILD_UPDATE
-            BUILD_SHELL
+            BUILD_PODMAN_COMPOSE
             BUILD_HYPRLAND
             BUILD_LAPTOP
             BUILD_LAPTOP_CLAMSHELL

@@ -26,8 +26,6 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
         network-manager-applet \
         pavucontrol \
         swaylock \
-        terminator \
-        tesseract \
         waybar \
         wofi
 fi

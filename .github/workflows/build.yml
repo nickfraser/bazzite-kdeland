@@ -22,7 +22,7 @@ env:
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
   BUILD_FROM_IMAGE: "ghcr.io/ublue-os/bazzite-nvidia-open:stable-44"
   BUILD_UPDATE: 0
-  BUILD_SHELL: 1
+  BUILD_PODMAN_COMPOSE: 1
   BUILD_HYPRLAND: 1
   BUILD_LAPTOP: 1
   BUILD_LAPTOP_CLAMSHELL: 1
@@ -195,7 +195,7 @@ jobs:
           build_args=(
             --build-arg "BUILD_FROM_IMAGE=${BUILD_FROM_IMAGE}"
             --build-arg "BUILD_UPDATE=${BUILD_UPDATE}"
-            --build-arg "BUILD_SHELL=${BUILD_SHELL}"
+            --build-arg "BUILD_PODMAN_COMPOSE=${BUILD_PODMAN_COMPOSE}"
             --build-arg "BUILD_HYPRLAND=${BUILD_HYPRLAND}"
             --build-arg "BUILD_LAPTOP=${BUILD_LAPTOP}"
             --build-arg "BUILD_LAPTOP_CLAMSHELL=${BUILD_LAPTOP_CLAMSHELL}"
