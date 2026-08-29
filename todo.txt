@@ -5,4 +5,4 @@
 2026-07-21 Re-test `KWIN_FORCE_SW_CURSOR=1` after relevant updates +bazzite-kdeland state:planned id:bazzite-kdeland-m9DEyHlo
 2026-07-21 Test `KWIN_DRM_DEVICES` as a fallback if the software-cursor workaround regresses +bazzite-kdeland state:planned id:bazzite-kdeland-rSotOuTJ
 2026-07-21 Evaluate a dedicated systemd user target for `plasma-polkit-agent.service` +bazzite-kdeland state:planned id:bazzite-kdeland-h8PDOYDm
-(C) 2026-08-29 Simply image - install as many commandline tools as possible from brew @pc @ai @<30mins +cli +bazzite-kdeland id:bazzite-kdeland-YRqE2bDI state:planned
+(C) 2026-08-29 Simple image - install as many commandline tools as possible from brew @pc @ai @<30mins +cli +bazzite-kdeland id:bazzite-kdeland-YRqE2bDI state:planned
