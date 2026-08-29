@@ -6,7 +6,6 @@ BASEDIR="$(dirname "$(realpath "$0")")"
 
 ### Install packages
 ${BASEDIR}/scripts/update.sh # BUILD_UPDATE=1 to update Fedora packages first
-${BASEDIR}/scripts/podman-compose.sh # BUILD_PODMAN_COMPOSE=1 to install Podman Compose
 ${BASEDIR}/scripts/hyprland.sh # BUILD_HYPRLAND=1 to install hyprland
 ${BASEDIR}/scripts/laptop.sh # BUILD_LAPTOP=1 to install laptop settings
 ${BASEDIR}/scripts/citrix.sh # BUILD_CITRIX=1 to install citrix workspace

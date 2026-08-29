@@ -8,7 +8,6 @@ IMAGE_TAG_PREFIX=$USER/bazzite-kdeland-local
 # BUILD ARGUMENTS:
 BUILD_FROM_IMAGE=ghcr.io/ublue-os/bazzite-nvidia-open:stable-44
 BUILD_UPDATE=0
-BUILD_PODMAN_COMPOSE=1
 BUILD_HYPRLAND=1
 BUILD_LAPTOP=1
 BUILD_LAPTOP_CLAMSHELL=1
@@ -26,7 +25,6 @@ sudo podman build \
     --tag=${IMAGE_TAG_PREFIX}:latest \
     --build-arg BUILD_FROM_IMAGE="${BUILD_FROM_IMAGE}" \
     --build-arg BUILD_UPDATE="${BUILD_UPDATE}" \
-    --build-arg BUILD_PODMAN_COMPOSE="${BUILD_PODMAN_COMPOSE}" \
     --build-arg BUILD_HYPRLAND="${BUILD_HYPRLAND}" \
     --build-arg BUILD_LAPTOP="${BUILD_LAPTOP}" \
     --build-arg BUILD_LAPTOP_CLAMSHELL="${BUILD_LAPTOP_CLAMSHELL}" \
