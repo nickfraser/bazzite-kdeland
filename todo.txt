@@ -1,1 +1,7 @@
 2025-09-25 Monthly merge `dev` -> `master` +bazzite-kdeland asana_gid:1211466297568635 id:bazzite-kdeland-K3Vj9KoQ state:planned
+2025-08-10 Replace `grimshot` to avoid its `sway` dependency +bazzite-kdeland state:planned id:bazzite-kdeland-Q2SjDw10
+2026-04-11 Install `gparted` on image +bazzite-kdeland state:planned id:bazzite-kdeland-Y3pkyc1z
+2026-07-21 Replace the portal workaround with cleaner session integration +bazzite-kdeland state:planned id:bazzite-kdeland-R6o2P66J
+2026-07-21 Re-test `KWIN_FORCE_SW_CURSOR=1` after relevant updates +bazzite-kdeland state:planned id:bazzite-kdeland-m9DEyHlo
+2026-07-21 Test `KWIN_DRM_DEVICES` as a fallback if the software-cursor workaround regresses +bazzite-kdeland state:planned id:bazzite-kdeland-rSotOuTJ
+2026-07-21 Evaluate a dedicated systemd user target for `plasma-polkit-agent.service` +bazzite-kdeland state:planned id:bazzite-kdeland-h8PDOYDm

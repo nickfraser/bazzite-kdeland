@@ -151,23 +151,6 @@ kernel releases differ.
 If cached images cause local kernel drift, consider adding `--pull=always` to
 the local build command in a future update.
 
-## TODO:
-
-Some outstanding items:
- - [x] Add option to install Citrix dependencies only
- - [x] Consider installing `hyprland` from COPR repositories, see [this example](https://github.com/gabeklavans/bazzite-hyprland/blob/8b94252b52317ba45f834b70d2abfba1ab4d4b15/build_files/build.sh#L15-L30)
- - [ ] `grimshot` (`hyprland`) installs `sway` as a dependency, consider alternative (flameshot?)
- - [x] "Idle" state missing from `hyprland` install (install `hypridle` and/or `hyprlock`? COPR Repos?)
-   - `hypridle` is now installed from the ashbuk/Hyprland-Fedora COPR; `hyprlock` is not available in that COPR, but `swaylock` is already installed for locking.
- - [x] `docker` installation
- - [x] Consider install all `libvirt` tools via the commandline, instead of some with `ujust` post-installation
- - [x] Install wine natively
- - [ ] Install `gparted` on image
- - [ ] Re-check whether the current portal workaround can be replaced later with cleaner session integration (`graphical-session.target` / UWSM).
- - [ ] Re-test `KWIN_FORCE_SW_CURSOR=1` after Plasma Login Manager, KWin, NVIDIA driver, or base-image updates; scope or remove it if upstream resolves the cursor handoff issue.
- - [ ] Test `KWIN_DRM_DEVICES=/dev/dri/card1:/dev/dri/card0` only as a fallback if the software-cursor workaround regresses.
- - [ ] Evaluate a dedicated systemd user target for `plasma-polkit-agent.service` instead of the current Hyprland `exec-once` startup.
-
 ## Acknowledgements
 
  - [bootc](https://github.com/bootc-dev/bootc) - the underlying technology

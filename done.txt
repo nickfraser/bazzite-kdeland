@@ -4,3 +4,6 @@ x 2025-11-26 2025-10-18 Switch from DX -> regular base +bazzite-kdeland asana_gi
 x 2026-05-09 2025-10-18 Try steam alternative +bazzite-kdeland asana_gid:1211678787904605 id:bazzite-kdeland-SdWmFR4o
 x 2025-11-26 2025-10-18 Install wine (natively) +bazzite-kdeland asana_gid:1211678787904608 id:bazzite-kdeland-qnUFFuRy
 x 2026-01-24 2026-01-01 Setup bash config with `~/.bashrc.d/` +bazzite-kdeland asana_gid:1212633605016704 id:bazzite-kdeland-9y3rPro0
+x 2025-08-09 2025-08-09 Add option to install Citrix dependencies only +bazzite-kdeland id:bazzite-kdeland-tg4Z7kTG
+x 2026-02-01 2025-08-09 Install Hyprland from COPR repositories +bazzite-kdeland id:bazzite-kdeland-3OcjqKZJ
+x 2026-07-21 2025-08-10 Add Hyprland idle support +bazzite-kdeland id:bazzite-kdeland-See7R8d1
