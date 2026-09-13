@@ -35,7 +35,6 @@ In order to control what packages are installed you can modify the following var
 
  - `BUILD_FROM_IMAGE=<base_image>` the base image, default: `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44`
  - `BUILD_UPDATE=<0|1>` update Fedora packages in the base image before installing anything else while keeping Bazzite's kernel and graphics stack on the base-image versions, default=0
- - `BUILD_SHELL=<0|1>` add various commandline utilities, default=1
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed in the Plasma Login Manager. Only has an effect if `BUILD_LAPTOP=1`, default=1
@@ -49,9 +48,9 @@ In order to control what packages are installed you can modify the following var
 ## Build Locally
 
 In order to debug various issues, `build-local.sh` is setup to build the image
-with the published profile: updates and Citrix are disabled; the shell,
-Hyprland, laptop, OpenRazer, Docker, Wine, and KVM options are enabled. It
-defaults to `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
+with the published profile: updates and Citrix are disabled; Hyprland, laptop,
+OpenRazer, Docker, Wine, and KVM options are enabled. It defaults to
+`ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
 
 ## build.sh
 
