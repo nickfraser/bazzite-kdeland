@@ -6,6 +6,7 @@ SCRIPTDIR="$(dirname "$(realpath "$0")")"
 source "${SCRIPTDIR}/dnf.sh"
 
 if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
+    readonly OPENRAZER_RPMS=/var/tmp/openrazer-rpms/rpms
     readonly UBLUE_AKMODS_CERT=/etc/pki/akmods/certs/akmods-ublue.der
     readonly UBLUE_AKMODS_CERT_FINGERPRINT='4E:5C:68:47:4C:B1:33:FD:89:84:D9:59:97:62:CE:CE:91:00:C3:E6:CD:8A:97:09:AE:AA:BD:85:DD:9E:70:D1'
     readonly OPENRAZER_MODULES=(razeraccessory razerkbd razerkraken razermouse)
@@ -16,6 +17,22 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
         exit 1
     fi
     kernel_release="${kernel_releases[0]}"
+
+    shopt -s nullglob
+    addons_rpms=("${OPENRAZER_RPMS}"/ublue-os/ublue-os-akmods-addons-[0-9]*.rpm)
+    common_rpms=("${OPENRAZER_RPMS}"/common/openrazer-[0-9]*.rpm)
+    kmod_rpms=("${OPENRAZER_RPMS}"/kmods/kmod-openrazer-"${kernel_release}"-*.rpm)
+    shopt -u nullglob
+
+    if (( ${#addons_rpms[@]} != 1 || ${#common_rpms[@]} != 1 || ${#kmod_rpms[@]} != 1 )); then
+        printf 'Expected one complete OpenRazer RPM set for kernel %s.\n' \
+            "${kernel_release}" >&2
+        exit 1
+    fi
+    openrazer_rpms=("${addons_rpms[@]}" "${common_rpms[@]}" "${kmod_rpms[@]}")
+
+    rpm --import "${SCRIPTDIR}/etc/pki/rpm-gpg/RPM-GPG-KEY-ublue-akmods"
+    dnf5 install -y --disablerepo='*' --setopt=localpkg_gpgcheck=1 "${openrazer_rpms[@]}"
 
     readonly kmod_package="kmod-openrazer-${kernel_release}"
     rpm -q "${kmod_package}" ublue-os-akmods-addons

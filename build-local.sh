@@ -18,12 +18,18 @@ BUILD_DOCKER=1
 BUILD_WINE=1
 BUILD_KVM=1
 
+OPENRAZER_AKMODS_IMAGE=base_image
+if [[ "${BUILD_LAPTOP}" == "1" && "${BUILD_LAPTOP_OPENRAZER}" == "1" ]]; then
+    OPENRAZER_AKMODS_IMAGE="$(sudo ./resolve-openrazer-akmods.sh "${BUILD_FROM_IMAGE}")"
+fi
+
 sudo podman build \
     -f Containerfile \
     --tag=${IMAGE_TAG_PREFIX}:${TIMESTAMP} \
     --tag=${IMAGE_TAG_PREFIX}:stable \
     --tag=${IMAGE_TAG_PREFIX}:latest \
     --build-arg BUILD_FROM_IMAGE="${BUILD_FROM_IMAGE}" \
+    --build-arg OPENRAZER_AKMODS_IMAGE="${OPENRAZER_AKMODS_IMAGE}" \
     --build-arg BUILD_UPDATE="${BUILD_UPDATE}" \
     --build-arg BUILD_HYPRLAND="${BUILD_HYPRLAND}" \
     --build-arg BUILD_LAPTOP="${BUILD_LAPTOP}" \

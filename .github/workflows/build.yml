@@ -6,7 +6,7 @@ on:
       - main
       - dev
   schedule:
-    - cron: '0 0 1 * *'  # 12:00am UTC first of every month
+    - cron: '0 0 1-7 * *'  # Retry daily during the first week of each month
   push:
     branches:
       - main
@@ -140,6 +140,15 @@ jobs:
 
       - name: Mount BTRFS for podman storage
         uses: ublue-os/container-storage-action@main
+        with:
+          target-dir: /var/lib/containers
+
+      - name: Resolve matching OpenRazer artifact
+        id: openrazer
+        if: env.BUILD_LAPTOP == '1' && env.BUILD_LAPTOP_OPENRAZER == '1'
+        run: |
+          image="$(sudo ./resolve-openrazer-akmods.sh "${BUILD_FROM_IMAGE}")"
+          echo "image=${image}" >> "${GITHUB_OUTPUT}"
 
       - name: Get current date
         id: date
@@ -190,6 +199,8 @@ jobs:
 
       - name: Build Image
         id: build_image
+        env:
+          OPENRAZER_AKMODS_IMAGE: ${{ steps.openrazer.outputs.image }}
         run: |
           build_args=(
             --build-arg "BUILD_FROM_IMAGE=${BUILD_FROM_IMAGE}"
@@ -204,6 +215,11 @@ jobs:
             --build-arg "BUILD_WINE=${BUILD_WINE}"
             --build-arg "BUILD_KVM=${BUILD_KVM}"
           )
+
+          if [[ "${BUILD_LAPTOP}" == "1" && "${BUILD_LAPTOP_OPENRAZER}" == "1" ]]; then
+            test -n "${OPENRAZER_AKMODS_IMAGE}"
+            build_args+=(--build-arg "OPENRAZER_AKMODS_IMAGE=${OPENRAZER_AKMODS_IMAGE}")
+          fi
 
           label_args=()
           while IFS= read -r label; do
