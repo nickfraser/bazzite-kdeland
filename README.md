@@ -38,7 +38,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed in the Plasma Login Manager. Only has an effect if `BUILD_LAPTOP=1`, default=1
- - `BUILD_LAPTOP_OPENRAZER=<0|1>` install and validate signed OpenRazer kernel modules selected for the base image's exact kernel release, then add the userspace daemon, default=1
+ - `BUILD_LAPTOP_OPENRAZER=<0|1>` validate the signed OpenRazer kernel modules supplied by Bazzite and add the userspace daemon. The build fails unless the modules match the base image's exact kernel release, default=1
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=0
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
@@ -50,8 +50,7 @@ In order to control what packages are installed you can modify the following var
 In order to debug various issues, `build-local.sh` is setup to build the image
 with the published profile: updates and Citrix are disabled; Hyprland, laptop,
 OpenRazer, Docker, Wine, and KVM options are enabled. It defaults to
-`ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image. Before the
-build, it resolves the kernel-specific UBlue akmods image required by that base.
+`ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
 
 ## build.sh
 
@@ -89,7 +88,6 @@ scripts.
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).
-Scheduled builds retry during the first week of each month to allow the exact-kernel akmods artifact to catch up with a new base image; the publish guard skips retries after a recent successful publish.
 
 ## Post-Installation Steps
 
@@ -99,12 +97,11 @@ I still need to install:
 
 ### OpenRazer
 
-The build reads the selected Bazzite base image's installed kernel release and
-resolves the matching UBlue akmods image to an immutable digest. It installs
-that artifact's signed OpenRazer modules and a compatible `openrazer-daemon`
-from Bazzite's Terra repository. The daemon transaction cannot replace the
-kernel module packages, and the image does not install DKMS. Both components
-update when the image is rebuilt and published.
+The published image uses the signed OpenRazer kernel modules bundled with
+Bazzite and adds a compatible `openrazer-daemon` from Bazzite's Terra
+repository. The daemon transaction cannot replace the base image's OpenRazer
+packages and does not install DKMS. Both components update when the image is
+rebuilt and published.
 
 After rebasing, add the desktop user to the group used by the installed udev
 rule, then log out and back in or reboot:
@@ -148,11 +145,10 @@ mokutil --sb-state
 modinfo -F signer razerkbd
 ```
 
-The akmods artifact is selected from the base image's exact OGC kernel rather
-than from a separately moving rolling tag. This image validates every
-OpenRazer module, its package ownership, kernel compatibility, signature, udev
-rules, and daemon activation files. The build fails rather than publishing an
-incomplete installation.
+OpenRazer kernel modules are installed alongside the OGC kernel when Bazzite
+builds the base image. This image validates every OpenRazer module, its package
+ownership, kernel compatibility, signature, udev rules, and daemon activation
+files. The build fails rather than publishing an incomplete installation.
 
 ## Acknowledgements
 
