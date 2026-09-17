@@ -38,7 +38,7 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_HYPRLAND=<0|1>` add [hyprland](https://hypr.land/) and some other utils to get my preferred configuration running, default=1
  - `BUILD_LAPTOP=<0|1>` add various features which only makes sense on laptops, default=1
  - `BUILD_LAPTOP_CLAMSHELL=<0|1>` do not suspend when laptop lid is closed in the Plasma Login Manager. Only has an effect if `BUILD_LAPTOP=1`, default=1
- - `BUILD_LAPTOP_OPENRAZER=<0|1>` bundle the signed OpenRazer kernel module and daemon. It tracks the latest OGC akmods artifact and fails the build unless it matches the base image's exact kernel release, default=1
+ - `BUILD_LAPTOP_OPENRAZER=<0|1>` validate the signed OpenRazer kernel modules supplied by Bazzite and add the userspace daemon. The build fails unless the modules match the base image's exact kernel release, default=1
  - `BUILD_CITRIX=<0|1>` install Citrix Workspace, default=0
  - `BUILD_CITRIX_DEPS_ONLY=<0|1>` install dependencies without installing Citrix Workspace itself. Only has an effect if `BUILD_CITRIX=1`, default=0
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
@@ -97,9 +97,11 @@ I still need to install:
 
 ### OpenRazer
 
-The published image includes the signed OpenRazer kernel module and the latest
-available `openrazer-daemon`. It does not install DKMS. The daemon updates when
-the image is rebuilt and published.
+The published image uses the signed OpenRazer kernel modules bundled with
+Bazzite and adds an exact-version `openrazer-daemon` from the Terra repository
+configured by the base image. The daemon transaction cannot replace the base
+image's OpenRazer packages and does not install DKMS. Both components update
+when the image is rebuilt and published.
 
 After rebasing, add the desktop user to the group used by the installed udev
 rule, then log out and back in or reboot:
@@ -143,12 +145,10 @@ mokutil --sb-state
 modinfo -F signer razerkbd
 ```
 
-The kmod artifact is coupled to the exact Bazzite OGC kernel release. Published
-CI builds start from fresh base and akmods images; the build fails if their
-kernel releases differ.
-
-If cached images cause local kernel drift, consider adding `--pull=always` to
-the local build command in a future update.
+OpenRazer kernel modules are installed alongside the OGC kernel when Bazzite
+builds the base image. This image validates every OpenRazer module, its package
+ownership, kernel compatibility, signature, udev rules, and daemon activation
+files. The build fails rather than publishing an incomplete installation.
 
 ## Acknowledgements
 
