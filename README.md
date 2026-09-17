@@ -98,10 +98,10 @@ I still need to install:
 ### OpenRazer
 
 The published image uses the signed OpenRazer kernel modules bundled with
-Bazzite and adds a compatible `openrazer-daemon` from Bazzite's Terra
-repository. The daemon transaction cannot replace the base image's OpenRazer
-packages and does not install DKMS. Both components update when the image is
-rebuilt and published.
+Bazzite and adds an exact-version `openrazer-daemon` from the Terra repository
+configured by the base image. The daemon transaction cannot replace the base
+image's OpenRazer packages and does not install DKMS. Both components update
+when the image is rebuilt and published.
 
 After rebasing, add the desktop user to the group used by the installed udev
 rule, then log out and back in or reboot:
