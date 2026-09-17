@@ -10,7 +10,25 @@ fi
 readonly base_image="$1"
 readonly akmods_repository='ghcr.io/ublue-os/akmods'
 
-podman pull --retry 3 "${base_image}" >&2
+pull_image() {
+    local image="$1"
+    local attempt
+
+    for attempt in 1 2 3; do
+        if podman pull "${image}" >&2; then
+            return 0
+        fi
+        if (( attempt < 3 )); then
+            printf 'Pull attempt %d for %s failed; retrying.\n' "${attempt}" "${image}" >&2
+            sleep "$((attempt * 2))"
+        fi
+    done
+
+    printf 'Failed to pull %s after 3 attempts.\n' "${image}" >&2
+    return 1
+}
+
+pull_image "${base_image}"
 
 mapfile -t kernel_releases < <(
     podman run --rm --entrypoint /usr/bin/rpm "${base_image}" \
@@ -29,7 +47,7 @@ fi
 readonly fedora_release="${BASH_REMATCH[1]}"
 readonly tagged_image="${akmods_repository}:ogc-${fedora_release}-${kernel_release}"
 
-podman pull --retry 3 "${tagged_image}" >&2
+pull_image "${tagged_image}"
 
 artifact_kernel="$(
     podman image inspect --format '{{ index .Labels "ostree.linux" }}' "${tagged_image}"
