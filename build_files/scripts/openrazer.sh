@@ -53,7 +53,11 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
         grep -Fqx "sha256 Fingerprint=${UBLUE_AKMODS_CERT_FINGERPRINT}"
     mapfile -t udev_rules < <(rpm -ql "${common_package}" | grep -E '/udev/rules.d/.*razer')
     (( ${#udev_rules[@]} > 0 ))
-    grep -Eq 'GROUP="?plugdev"?' "${udev_rules[@]}"
+    if ! grep -Eq '(^|,)[[:space:]]*GROUP[[:space:]]*(=|:=)[[:space:]]*"plugdev"[[:space:]]*(,|$)' \
+        "${udev_rules[@]}"; then
+        printf '%s\n' 'OpenRazer udev rules do not assign devices to plugdev.' >&2
+        exit 1
+    fi
     getent group plugdev >/dev/null
 
     # Keep Bazzite's matching kmod and only add its userspace daemon.
