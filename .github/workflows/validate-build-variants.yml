@@ -107,6 +107,7 @@ jobs:
           for name in "${build_arg_names[@]}"; do
             build_args+=(--build-arg "${name}=${!name}")
           done
+
           sudo podman build \
             -f ./Containerfile \
             "${build_args[@]}" \

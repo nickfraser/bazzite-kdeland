@@ -18,23 +18,18 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
     kernel_release="${kernel_releases[0]}"
 
     readonly kmod_package=kmod-openrazer
-    rpm -q "${kmod_package}" ublue-os-akmods-addons
-    ! rpm -q dkms
-    ! rpm -q openrazer-kernel-modules-dkms
-
     mapfile -t common_packages < <(
         rpm -q --whatprovides --queryformat '%{NAME}\n' openrazer-kmod-common
     )
     (( ${#common_packages[@]} == 1 ))
     readonly common_package="${common_packages[0]}"
+    readonly protected_packages=("${kmod_package}" "${common_package}" ublue-os-akmods-addons)
+
+    protected_nevras="$(rpm -q --queryformat '%{NEVRA}\n' "${protected_packages[@]}")"
+    readonly protected_nevras
     common_evr="$(rpm -q --queryformat '%{EVR}\n' "${common_package}")"
     readonly common_evr
     readonly daemon_package="openrazer-daemon-${common_evr}"
-
-    kmod_nevra="$(rpm -q --queryformat '%{NEVRA}\n' "${kmod_package}")"
-    common_nevra="$(rpm -q --queryformat '%{NEVRA}\n' "${common_package}")"
-    addons_nevra="$(rpm -q --queryformat '%{NEVRA}\n' ublue-os-akmods-addons)"
-    readonly kmod_nevra common_nevra addons_nevra
 
     for module in "${OPENRAZER_MODULES[@]}"; do
         module_path="$(modinfo -k "${kernel_release}" -n "${module}")"
@@ -47,7 +42,6 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
         modprobe --set-version "${kernel_release}" --show-depends "${module}" >/dev/null
     done
 
-    test -f "${UBLUE_AKMODS_CERT}"
     test "$(rpm -qf --queryformat '%{NAME}\n' "${UBLUE_AKMODS_CERT}")" = 'ublue-os-akmods-addons'
     openssl x509 -inform DER -in "${UBLUE_AKMODS_CERT}" -noout -fingerprint -sha256 | \
         grep -Fqx "sha256 Fingerprint=${UBLUE_AKMODS_CERT_FINGERPRINT}"
@@ -62,7 +56,6 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
 
     # Keep Bazzite's matching kmod and only add its userspace daemon.
     dnf5_guarded install -y \
-        --enable-repo=terra \
         --from-repo=terra \
         --exclude=dkms \
         "--exclude=${common_package}" \
@@ -75,13 +68,10 @@ if [[ BUILD_LAPTOP_OPENRAZER -eq "1" ]]; then
     readonly user_service=/usr/lib/systemd/user/openrazer-daemon.service
     readonly dbus_service=/usr/share/dbus-1/services/org.razer.service
 
-    rpm -q openrazer-daemon
     test "$(rpm -q --queryformat '%{EVR}\n' openrazer-daemon)" = "${common_evr}"
     ! rpm -q dkms
     ! rpm -q openrazer-kernel-modules-dkms
-    test "$(rpm -q --queryformat '%{NEVRA}\n' "${kmod_package}")" = "${kmod_nevra}"
-    test "$(rpm -q --queryformat '%{NEVRA}\n' "${common_package}")" = "${common_nevra}"
-    test "$(rpm -q --queryformat '%{NEVRA}\n' ublue-os-akmods-addons)" = "${addons_nevra}"
+    test "$(rpm -q --queryformat '%{NEVRA}\n' "${protected_packages[@]}")" = "${protected_nevras}"
     test -x "${daemon}"
     test "$(rpm -qf --queryformat '%{NAME}\n' "${daemon}")" = 'openrazer-daemon'
     python3 -c 'import openrazer_daemon'
