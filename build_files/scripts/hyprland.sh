@@ -22,10 +22,11 @@ if [[ BUILD_HYPRLAND -eq "1" ]]; then
     dnf5_guarded install -y \
         blueman \
         brightnessctl \
-        grimshot \
+        flameshot \
         network-manager-applet \
         pavucontrol \
         swaylock \
         waybar \
+        wl-clipboard \
         wofi
 fi

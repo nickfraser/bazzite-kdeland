@@ -70,6 +70,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
+      - name: Check Hyprland package script syntax
+        run: bash -n build_files/scripts/hyprland.sh
+
       - name: Mount BTRFS for podman storage
         uses: ublue-os/container-storage-action@main
         with:
@@ -120,3 +123,19 @@ jobs:
           SCENARIO: ${{ matrix.scenario }}
         run: |
           sudo podman inspect "localhost/${IMAGE_NAME}:ci-${SCENARIO}" >/dev/null
+
+      - name: Verify Hyprland screenshot packages
+        if: matrix.BUILD_HYPRLAND == '1'
+        env:
+          SCENARIO: ${{ matrix.scenario }}
+        run: |
+          sudo podman run --rm --entrypoint /bin/bash \
+            "localhost/${IMAGE_NAME}:ci-${SCENARIO}" -euc '
+              rpm -q flameshot wl-clipboard xdg-desktop-portal-hyprland
+              if rpm -q --quiet grimshot; then
+                printf "grimshot must not be installed in the Hyprland image\n" >&2
+                exit 1
+              fi
+              # Report whether sway remains in the base image or dependencies.
+              rpm -q sway || true
+            '
