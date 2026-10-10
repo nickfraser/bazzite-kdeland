@@ -85,6 +85,42 @@ The template intentionally does not include personal Hyprland settings such
 as monitor layout, key bindings, themes, application launchers, or hardware
 scripts.
 
+## Screenshots in Hyprland
+
+With `BUILD_HYPRLAND=1`, the image installs the native Fedora `flameshot`
+package and `wl-clipboard`. Flameshot replaces `grimshot` and uses the existing
+`xdg-desktop-portal-hyprland` backend to capture the screen. Install the
+[user-home integration](#user-home-integration) so the portal receives the
+Hyprland session environment.
+
+To select an area, annotate it, and copy the result when you confirm:
+
+```bash
+QT_QPA_PLATFORM=wayland flameshot gui --clipboard
+```
+
+The Qt backend setting applies only to this command. Press Escape to cancel.
+Assign the command to a personal Hyprland key binding if desired.
+
+After deploying the updated image, check the screenshot packages:
+
+```bash
+rpm -q flameshot wl-clipboard xdg-desktop-portal-hyprland
+rpm -q grimshot sway
+```
+
+`grimshot` should be absent. If `sway` remains, check whether it comes from the
+base image or another dependency. CI checks the required packages and the
+absence of `grimshot` in the Hyprland-enabled build, and reports whether `sway`
+is installed.
+
+On the target machine, verify the first capture after login, repeated captures,
+launching from a key binding, and pasting the image after closing the overlay.
+Also check overlay placement and selection coordinates with multiple monitors
+or fractional scaling. Add Flameshot-specific window rules only if needed,
+using the syntax supported by your Hyprland version. See the upstream
+[Wayland help](https://flameshot.org/docs/guide/wayland-help/) for troubleshooting.
+
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).
