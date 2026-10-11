@@ -219,6 +219,8 @@ jobs:
 
           sudo podman build \
             -f ./Containerfile \
+            --pull=always \
+            --no-cache \
             "${build_args[@]}" \
             "${label_args[@]}" \
             --format docker \
