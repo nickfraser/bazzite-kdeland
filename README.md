@@ -200,21 +200,6 @@ This installs native RPMs from the official upstream GitHub releases:
 No separate RPM layering is needed. Setting `BUILD_SCARLETT=0` skips the
 Scarlett installer's downloads and package installation.
 
-Each uncached build selects the newest stable release by publication date,
-using GitHub's stable/prerelease designation. The exception is `fcp-support`:
-it currently only has a published prerelease, which is required for these
-interfaces. The installer accepts the newest FCP prerelease only when no stable
-release exists, and automatically prefers stable once available. A beta-named GUI
-release marked non-prerelease by GitHub is eligible, but is still beta software.
-
-Versions are not routinely pinned. The installer requires an unambiguous RPM
-for the build architecture and Fedora release, verifies available release
-SHA-256 checksums and RPM integrity/signatures, and logs release URLs and package
-versions. Current upstream RPMs are unsigned; their GitHub asset SHA-256 digests
-are checked instead. A missing or incompatible selected RPM, verification
-mismatch, or failed installation fails the build rather than using an older
-release. Third-party repositories are not added for this feature.
-
 The Scarlett 4th Gen **16i16, 18i16, and 18i20 require Linux 6.14 or later**
 for FCP control support. The driver is part of the upstream kernel; this feature
 does not install a custom kernel or DKMS module.
@@ -226,32 +211,13 @@ FCP socket, then log out and back in or reboot:
 sudo usermod -aG audio "$USER"
 ```
 
-With the Scarlett 18i16 connected, run the following as your normal desktop user:
+Device connection starts a `fcp-server@<card-number>.service` instance
+automatically through the installed udev rule; do not manually enable the service.
 
-```bash
-uname -r                              # Must be Linux 6.14+ on the deployed system
-aplay -l                              # ALSA playback devices
-arecord -l                            # ALSA capture devices
-wpctl status                          # PipeWire device discovery
-fcp-tool                              # Device and installed firmware information
-systemctl status 'fcp-server@*.service'
-journalctl -b -u 'fcp-server@*.service'
-alsa-scarlett-gui
-```
-
-Device connection should start a `fcp-server@<card-number>.service` instance
-automatically. In the GUI, verify gain, phantom-power, and routing controls can
-be read and changed, then check playback/capture and that configuration survives
-reconnect and reboot.
-
-Installing firmware files **does not flash the interface**. The image build
-does not access hardware or start the FCP server. Firmware updating remains a
-deliberate manual action through the GUI or `fcp-tool`; the GUI may offer an
-update when newer files are available. Upstream requires updated firmware for
-these larger 4th Gen interfaces, so an interface with older firmware may need a
-manual update before full functionality can be verified. Follow the
+The image includes firmware files but **does not flash the interface**. An
+interface with older firmware may require a separate manual update. See the
 [upstream installation guidance](https://github.com/geoffreybennett/alsa-scarlett-gui/blob/master/docs/INSTALL.md)
-for firmware requirements.
+for firmware requirements and package usage.
 
 ## Acknowledgements
 
