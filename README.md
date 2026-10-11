@@ -44,13 +44,19 @@ In order to control what packages are installed you can modify the following var
  - `BUILD_DOCKER=<0|1>` install Docker, default=1
  - `BUILD_WINE=<0|1>` install Wine, default=1
  - `BUILD_KVM=<0|1>` install KVM, default=1
+ - `BUILD_SCARLETT=<0|1>` install native Focusrite Scarlett 4th Gen control tools, service, firmware files, and GUI, default=1
 
 ## Build Locally
 
 In order to debug various issues, `build-local.sh` is setup to build the image
 with the published profile: updates and Citrix are disabled; Hyprland, laptop,
-OpenRazer, Docker, Wine, and KVM options are enabled. It defaults to
+OpenRazer, Docker, Wine, KVM, and Scarlett options are enabled. It defaults to
 `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` as the base image.
+
+Edit the assignments in `build-local.sh` to change the local profile; for example,
+set `BUILD_SCARLETT=0` to opt out. These assignments override environment variables.
+Direct Containerfile builds default Scarlett support to off; pass
+`--build-arg BUILD_SCARLETT=1` to enable it.
 
 ## build.sh
 
@@ -108,6 +114,10 @@ configuration and troubleshooting, see Flameshot's
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).
+
+Published-image builds always pull the base image and disable container layer
+caching so package installation and upstream release discovery run again. Local
+test builds retain their normal caching behaviour.
 
 ## Post-Installation Steps
 
@@ -169,6 +179,40 @@ OpenRazer kernel modules are installed alongside the OGC kernel when Bazzite
 builds the base image. This image validates every OpenRazer module, its package
 ownership, kernel compatibility, signature, udev rules, and daemon activation
 files. The build fails rather than publishing an incomplete installation.
+
+### Focusrite Scarlett 4th Gen
+
+The published Razer image and local build profile enable `BUILD_SCARLETT=1`.
+This installs native RPMs from the official upstream GitHub releases:
+
+- [`fcp-support`](https://github.com/geoffreybennett/fcp-support/releases):
+  `fcp-server`, `fcp-tool`, the systemd service, udev rule, and control mappings.
+- [`scarlett4-firmware`](https://github.com/geoffreybennett/scarlett4-firmware/releases):
+  firmware update files under `/usr/lib/firmware/scarlett4`.
+- [`alsa-scarlett-gui`](https://github.com/geoffreybennett/alsa-scarlett-gui/releases):
+  the desktop mixer and routing controller.
+
+No separate RPM layering is needed. Setting `BUILD_SCARLETT=0` skips the
+Scarlett installer's downloads and package installation.
+
+The Scarlett 4th Gen **16i16, 18i16, and 18i20 require Linux 6.14 or later**
+for FCP control support. The driver is part of the upstream kernel; this feature
+does not install a custom kernel or DKMS module.
+
+After deployment, add your desktop user to `audio` to access `fcp-tool` and the
+FCP socket, then log out and back in or reboot:
+
+```bash
+sudo usermod -aG audio "$USER"
+```
+
+Device connection starts a `fcp-server@<card-number>.service` instance
+automatically through the installed udev rule; do not manually enable the service.
+
+The image includes firmware files but **does not flash the interface**. An
+interface with older firmware may require a separate manual update. See the
+[upstream installation guidance](https://github.com/geoffreybennett/alsa-scarlett-gui/blob/master/docs/INSTALL.md)
+for firmware requirements and package usage.
 
 ## Acknowledgements
 

@@ -18,6 +18,7 @@ ARG BUILD_CITRIX_DEPS_ONLY
 ARG BUILD_DOCKER
 ARG BUILD_WINE
 ARG BUILD_KVM
+ARG BUILD_SCARLETT=0
 
 # Layer on my own customizations
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \

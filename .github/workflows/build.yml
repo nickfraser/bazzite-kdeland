@@ -31,6 +31,7 @@ env:
   BUILD_DOCKER: 1
   BUILD_WINE: 1
   BUILD_KVM: 1
+  BUILD_SCARLETT: "1"
   DEFAULT_TAG: "latest"
 
 concurrency:
@@ -205,6 +206,7 @@ jobs:
             --build-arg "BUILD_DOCKER=${BUILD_DOCKER}"
             --build-arg "BUILD_WINE=${BUILD_WINE}"
             --build-arg "BUILD_KVM=${BUILD_KVM}"
+            --build-arg "BUILD_SCARLETT=${BUILD_SCARLETT}"
           )
 
           label_args=()
@@ -217,6 +219,8 @@ jobs:
 
           sudo podman build \
             -f ./Containerfile \
+            --pull=always \
+            --no-cache \
             "${build_args[@]}" \
             "${label_args[@]}" \
             --format docker \
