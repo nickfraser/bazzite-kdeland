@@ -91,7 +91,7 @@ download_rpm() {
         if [[ "${url}" != "none" ]]; then
             [[ "${url}" == "https://github.com/geoffreybennett/${package}/releases/download/"* ]]
             fetch "${url}" -o "${checksum_file}"
-            digest="$(jq -Rse --arg name "${asset_name}" '
+            digest="$(jq -Rrse --arg name "${asset_name}" '
                 [split("\n")[] | scan("^([A-Fa-f0-9]{64}) [ *](.+)$") |
                     select(.[1] == $name or .[1] == ("./" + $name)) | .[0]] |
                 if length == 1 then "sha256:" + .[0]
