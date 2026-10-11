@@ -85,6 +85,26 @@ The template intentionally does not include personal Hyprland settings such
 as monitor layout, key bindings, themes, application launchers, or hardware
 scripts.
 
+## Screenshots in Hyprland
+
+When `BUILD_HYPRLAND=1`, the image includes
+[Flameshot](https://flameshot.org/) for interactive screenshot capture and
+annotation, together with `wl-clipboard` for Wayland clipboard operations.
+
+Screen capture uses `xdg-desktop-portal-hyprland`. The
+[user-home integration](#user-home-integration) supplies the session environment
+needed by the portal.
+
+To select an area, annotate it, and copy the result to the clipboard:
+
+```bash
+QT_QPA_PLATFORM=wayland flameshot gui --clipboard
+```
+
+Screenshot key bindings are configured by the user. For compositor-specific
+configuration and troubleshooting, see Flameshot's
+[Wayland documentation](https://flameshot.org/docs/guide/wayland-help/).
+
 ## build.yml
 
 The [build.yml](./.github/workflows/build.yml) is configured to build the image with the [defaults specified](#environment-variables), including the `ghcr.io/ublue-os/bazzite-nvidia-open:stable-44` base image, and publishes it to the Github Container Registry (GHCR).

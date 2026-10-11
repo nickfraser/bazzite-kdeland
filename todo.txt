@@ -1,5 +1,5 @@
 2025-09-25 Monthly merge `dev` -> `master` +bazzite-kdeland asana_gid:1211466297568635 id:bazzite-kdeland-K3Vj9KoQ state:planned
-(C) 2025-08-10 Replace `grimshot` to avoid its `sway` dependency +bazzite-kdeland +hyprland @pc @ai @>30mins state:planned id:bazzite-kdeland-Q2SjDw10
+(C) 2025-08-10 Verify Flameshot screenshots and OCR in Hyprland after deployment and check whether sway remains +bazzite-kdeland +hyprland @pc @ai @>30mins state:planned id:bazzite-kdeland-DxBY0thY
 2026-04-11 Install `gparted` on image +bazzite-kdeland state:planned id:bazzite-kdeland-Y3pkyc1z
 2026-07-21 Replace the portal workaround with cleaner session integration +bazzite-kdeland state:planned id:bazzite-kdeland-R6o2P66J
 2026-07-21 Re-test `KWIN_FORCE_SW_CURSOR=1` after relevant updates +bazzite-kdeland state:planned id:bazzite-kdeland-m9DEyHlo

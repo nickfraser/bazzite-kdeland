@@ -8,3 +8,4 @@ x 2025-08-09 2025-08-09 Add option to install Citrix dependencies only +bazzite-
 x 2026-02-01 2025-08-09 Install Hyprland from COPR repositories +bazzite-kdeland id:bazzite-kdeland-3OcjqKZJ
 x 2026-07-21 2025-08-10 Add Hyprland idle support +bazzite-kdeland id:bazzite-kdeland-See7R8d1
 x 2026-09-17 2026-08-29 Simple image - install as many commandline tools as possible from brew @pc @ai @<30mins +cli +bazzite-kdeland id:bazzite-kdeland-YRqE2bDI
+x 2026-10-10 2025-08-10 Replace `grimshot` to avoid its `sway` dependency +bazzite-kdeland +hyprland @pc @ai @>30mins id:bazzite-kdeland-Q2SjDw10
