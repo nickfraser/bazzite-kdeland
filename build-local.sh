@@ -17,6 +17,7 @@ BUILD_CITRIX_DEPS_ONLY=0
 BUILD_DOCKER=1
 BUILD_WINE=1
 BUILD_KVM=1
+BUILD_SCARLETT=1
 
 sudo podman build \
     -f Containerfile \
@@ -34,4 +35,5 @@ sudo podman build \
     --build-arg BUILD_DOCKER="${BUILD_DOCKER}" \
     --build-arg BUILD_WINE="${BUILD_WINE}" \
     --build-arg BUILD_KVM="${BUILD_KVM}" \
+    --build-arg BUILD_SCARLETT="${BUILD_SCARLETT}" \
     .
