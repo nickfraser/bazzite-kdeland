@@ -119,11 +119,6 @@ Published-image builds always pull the base image and disable container layer
 caching so package installation and upstream release discovery run again. Local
 test builds retain their normal caching behaviour.
 
-The [variant validation workflow](./.github/workflows/validate-build-variants.yml)
-includes an isolated `scarlett-on` build with all other optional features off.
-Its `all-off` baseline disables Scarlett. Both use the same build-and-image-exists
-checks as the other feature variants; hardware checks happen after deployment.
-
 ## Post-Installation Steps
 
 I still need to install:
